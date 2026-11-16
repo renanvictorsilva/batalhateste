@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Batalha Naval Química</title>
+<style>
+:root{--navy:#071b33;--blue:#0b4f83;--cyan:#39c6df;--light:#eaf5fb;--ink:#10243a;--gold:#ffd166;--red:#e85d75}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#061629,#0b3760);font-family:Arial,sans-serif;color:var(--ink);min-height:100vh}
+header{color:white;text-align:center;padding:22px 12px 12px}header h1{margin:0;font-size:clamp(25px,4vw,38px)}header p{margin:8px 0;color:#c6e5f3}
+main{max-width:1100px;margin:auto;padding:12px}.panel{background:#f4f9fc;border-radius:18px;padding:20px;margin:12px 0;box-shadow:0 12px 32px #0003}
+h2{margin:0 0 12px;color:#0a416c}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input,button{font:inherit;border-radius:10px;padding:12px 14px;border:1px solid #b7cad8}
+input{min-width:180px;flex:1}button{background:#0878b9;color:white;border:0;font-weight:bold;cursor:pointer}button:hover{filter:brightness(1.08)}button.secondary{background:#dcebf4;color:#103b5b}button:disabled{opacity:.45;cursor:not-allowed}
+.hidden{display:none!important}.muted{color:#587084;font-size:14px}.status{padding:12px;border-radius:10px;background:#e2f2fa;margin:10px 0}.boards{display:grid;grid-template-columns:1fr 1fr;gap:18px}.board-wrap{min-width:0}.board{display:grid;grid-template-columns:repeat(8,minmax(24px,1fr));gap:4px;background:#c7dce9;padding:7px;border-radius:12px}.cell{aspect-ratio:1;border:0;border-radius:5px;background:#70b9d8;padding:0;min-width:0;color:#fff;font-size:clamp(10px,1.5vw,16px);font-weight:bold}.cell.ship{background:#526f82}.cell.miss{background:#e9f5fa;color:#456}.cell.hit{background:#df5267;color:white}.cell:disabled{cursor:default;opacity:1}.axis{display:grid;grid-template-columns:repeat(8,1fr);text-align:center;font-size:12px;color:#476477;margin:0 0 4px}.player-title{font-weight:bold;margin:0 0 8px}.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#dcebf4;font-size:12px;margin-left:5px}
+.modal{position:fixed;inset:0;background:#001426cc;display:grid;place-items:center;padding:18px;z-index:10}.modal-card{background:white;max-width:540px;width:100%;border-radius:18px;padding:22px}.answers{display:grid;gap:8px;margin-top:16px}.answers button{text-align:left;background:#e4f1f8;color:#123d5b;border:2px solid transparent}.answers button:hover{border-color:#1687c2}.answers button:disabled{opacity:.8}
+footer{text-align:center;color:#c6e5f3;padding:18px;font-size:12px}
+@media(max-width:700px){.boards{grid-template-columns:1fr}.panel{padding:14px}.cell{font-size:12px}}
+</style>
+</head>
+<body>
+<header><h1>⚓ Batalha Naval Química</h1><p>Responda corretamente para liberar seus disparos!</p></header>
+<main>
+<section id="home" class="panel">
+<h2>Entrar na batalha</h2>
+<p class="muted">Digite seu nome. Crie uma sala ou entre com o código de outro jogador.</p>
+<div class="row"><input id="playerName" maxlength="18" placeholder="Seu nome"><button id="createBtn">Criar partida</button></div>
+<div class="row" style="margin-top:10px"><input id="roomCode" maxlength="5" placeholder="Código da sala (5 letras)" style="text-transform:uppercase"><button id="joinBtn" class="secondary">Entrar na partida</button></div>
+<div id="homeMsg" class="status">Conecte o Firebase para habilitar as partidas online.</div>
+</section>
+<section id="game" class="panel hidden">
+<div class="row" style="justify-content:space-between"><div><h2 id="roomHeading">Partida</h2><div class="muted" id="playersLine"></div></div><button class="secondary" id="copyCode">Copiar código</button></div>
+<div class="status" id="gameStatus">Aguardando...</div>
+<div class="boards">
+<div class="board-wrap"><p class="player-title">🎯 Tabuleiro adversário <span class="badge" id="enemyName">Aguardando</span></p><div class="axis"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div><div id="enemyBoard" class="board"></div><p class="muted">Clique em uma casa para tentar atacar.</p></div>
+<div class="board-wrap"><p class="player-title">🛡️ Seu território <span class="badge">Sua frota</span></p><div class="axis"><span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span></div><div id="myBoard" class="board"></div><p class="muted">Seus navios ficam marcados em cinza.</p></div>
+</div>
+</section>
+</main>
+<div id="questionModal" class="modal hidden"><div class="modal-card"><div class="muted" id="questionCount">Desafio de Química</div><h2 id="questionText"></h2><div id="answerList" class="answers"></div><div id="answerFeedback" class="status hidden"></div></div></div>
+<footer>Jogo educativo • Química básica • Protótipo para uso em laboratório</footer>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* COLE A CONFIGURAÇÃO DO SEU PROJETO FIREBASE AQUI */
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJECT_ID",
+  appId: "SEU_APP_ID"
+};
+const questions = [
+["Qual é o símbolo químico da água?","H₂O","CO₂","O₂","NaCl",0],
+["Qual partícula tem carga elétrica negativa?","Próton","Elétron","Nêutron","Núcleo",1],
+["Qual é o símbolo do oxigênio?","Ox","O","Og","Om",1],
+["A água, em temperatura ambiente, está em qual estado físico?","Sólido","Gasoso","Líquido","Plasma",2],
+["Qual destes é um metal?","Ferro","Enxofre","Oxigênio","Carbono",0],
+["Qual é o símbolo químico do ouro?","Ag","Au","Fe","O",1],
+["O sal de cozinha é conhecido como:","Ácido clorídrico","Cloreto de sódio","Bicarbonato","Glicose",1],
+["Qual gás é absorvido pelas plantas na fotossíntese?","Oxigênio","Hidrogênio","Gás carbônico","Hélio",2],
+["Uma mistura de água e óleo é geralmente:","Homogênea","Heterogênea","Uma substância pura","Um elemento",1],
+["Qual é o número atômico do hidrogênio?","1","2","8","10",0],
+["Qual destas substâncias é ácida?","Suco de limão","Água pura","Óleo","Solução de sabão",0],
+["O símbolo Na representa qual elemento?","Nitrogênio","Sódio","Neônio","Níquel",1],
+["A passagem do estado líquido para o gasoso é chamada:","Fusão","Solidificação","Vaporização","Condensação",2],
+["Qual partícula fica no núcleo do átomo e não possui carga?","Elétron","Próton","Nêutron","Íon",2],
+["O ar atmosférico é um exemplo de:","Elemento químico","Mistura de gases","Substância simples","Metal",1],
+["Qual é a fórmula do gás carbônico?","CO₂","H₂O","NaCl","O₂",0],
+["O pH menor que 7 indica, em geral, uma solução:","Básica","Neutra","Ácida","Metálica",2],
+["Qual destes é um exemplo de transformação química?","Gelo derretendo","Papel sendo rasgado","Ferro enferrujando","Água evaporando",2],
+["Qual é o símbolo químico do carbono?","Ca","C","Co","Cr",1],
+["A tabela periódica organiza:","Planetas","Elementos químicos","Tipos de misturas","Reações",1],
+["Qual é o principal componente do ar?","Oxigênio","Nitrogênio","Gás carbônico","Hidrogênio",1],
+["Qual destes materiais conduz bem eletricidade?","Plástico","Borracha","Cobre","Madeira seca",2],
+["Quando um sólido passa para o líquido ocorre:","Fusão","Evaporação","Condensação","Sublimação",0],
+["Qual é a fórmula do oxigênio molecular?","O","O₂","O₃","CO₂",1],
+["O vinagre contém principalmente qual ácido?","Ácido acético","Ácido sulfúrico","Ácido nítrico","Ácido carbônico",0],
+["Qual destes é uma base comum?","HCl","NaOH","CO₂","H₂SO₄",1],
+["O núcleo do átomo contém:","Elétrons e íons","Prótons e nêutrons","Somente elétrons","Somente moléculas",1],
+["Qual é o símbolo do ferro?","F","Fe","Fr","Fi",1],
+["A queima de madeira é um exemplo de:","Transformação química","Mudança de estado","Separação de mistura","Transformação física",0],
+["Qual destes é uma substância pura?","Água destilada","Água do mar","Leite","Ar",0],
+["O que indica a fórmula H₂O?","Dois átomos de oxigênio e um de hidrogênio","Dois átomos de hidrogênio e um de oxigênio","Dois átomos de água","Um átomo de hidrogênio",1],
+["Qual é o estado físico do vapor de água?","Sólido","Líquido","Gasoso","Pastoso",2],
+["Qual elemento é representado por Cl?","Cálcio","Cloro","Cobalto","Carbono",1],
+["Uma ligação iônica ocorre geralmente entre:","Dois ametais","Metal e ametal","Dois gases nobres","Duas moléculas de água",1],
+["Qual é a unidade usada para medir a quantidade de matéria?","Litro","Mol","Metro","Pascal",1],
+["Qual destes é um gás nobre?","Hélio","Ferro","Sódio","Cloro",0],
+["A ferrugem se forma principalmente pela reação do ferro com:","Oxigênio e água","Hélio e luz","Areia e sal","Nitrogênio puro",0],
+["Qual é o símbolo do cálcio?","C","Cl","Ca","Cu",2],
+["Uma solução é uma mistura:","Sempre heterogênea","Homogênea","Formada só por metais","Sem solvente",1],
+["Qual destes é um exemplo de ácido presente no estômago?","Ácido clorídrico","Ácido acético","Ácido cítrico","Ácido lático",0]
+];
+let db, auth, uid, roomId, roomUnsub, roomData, pendingCell=null, currentQuestion=null;
+const $=id=>document.getElementById(id);
+function say(msg){$("homeMsg").textContent=msg}
+function makeFleet(){const board=Array(64).fill("");const ships=[3,2,2,1,1];ships.forEach((len,n)=>{let placed=false,tries=0;while(!placed&&tries++<500){let horizontal=Math.random()<.5,r=Math.floor(Math.random()*8),c=Math.floor(Math.random()*8),cells=[];for(let k=0;k<len;k++){let rr=r+(horizontal?0:k),cc=c+(horizontal?k:0);if(rr>=8||cc>=8){cells=[];break}cells.push(rr*8+cc)}if(cells.length&&cells.every(i=>!board[i])){cells.forEach(i=>board[i]="S"+n);placed=true}}});return board}
+function initFirebase(){try{if(firebaseConfig.apiKey==="SUA_API_KEY")throw Error("Configure o Firebase no arquivo index.html antes de publicar.");firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.firestore();auth.signInAnonymously().catch(e=>say("Erro de autenticação: "+e.message));auth.onAuthStateChanged(u=>{if(u){uid=u.uid;say("Conectado. Crie uma partida ou entre com um código.")}})}catch(e){say(e.message)}}
+function code(){return Math.random().toString(36).slice(2,7).toUpperCase()}
+async function createRoom(){if(!uid)return say("Configure e conecte o Firebase primeiro.");let name=$("playerName").value.trim();if(!name)return say("Digite seu nome.");let id=code();let data={code:id,status:"waiting",players:[{uid,name}],boards:{[uid]:makeFleet()},shots:{[uid]:[]},turn:uid,createdAt:firebase.firestore.FieldValue.serverTimestamp(),winner:null,question:null,lastResult:null};await db.collection("rooms").doc(id).set(data);enterRoom(id)}
+async function joinRoom(){if(!uid)return say("Configure e conecte o Firebase primeiro.");let name=$("playerName").value.trim(),id=$("roomCode").value.trim().toUpperCase();if(!name||!id)return say("Informe seu nome e o código.");let ref=db.collection("rooms").doc(id);await db.runTransaction(async tx=>{let s=await tx.get(ref);if(!s.exists)throw Error("Sala não encontrada.");let d=s.data();if(d.players.length>=2)throw Error("Essa sala já está cheia.");if(d.players.some(p=>p.uid===uid))return;d.players.push({uid,name});d.boards[uid]=makeFleet();d.shots[uid]=[];d.status="playing";tx.update(ref,{players:d.players,boards:d.boards,shots:d.shots,status:"playing"})});enterRoom(id)}
+function enterRoom(id){roomId=id;$("home").classList.add("hidden");$("game").classList.remove("hidden");$("roomHeading").textContent="Partida "+id;if(roomUnsub)roomUnsub();roomUnsub=db.collection("rooms").doc(id).onSnapshot(s=>{if(s.exists){roomData=s.data();render()}})}
+function enemy(){return roomData?.players.find(p=>p.uid!==uid)}
+function render(){if(!roomData)return;let opp=enemy();$("playersLine").textContent=roomData.players.map(p=>p.name).join(" × ");$("enemyName").textContent=opp?opp.name:"Aguardando jogador";let myShots=roomData.shots[uid]||[],oppShots=opp?(roomData.shots[opp.uid]||[]):[];let myBoard=roomData.boards[uid]||[],oppBoard=opp?(roomData.boards[opp.uid]||[]):[];$("enemyBoard").innerHTML="";$("myBoard").innerHTML="";
+for(let i=0;i<64;i++){let e=document.createElement("button");e.className="cell";let shot=myShots.find(x=>x.i===i);if(shot){e.classList.add(shot.hit?"hit":"miss");e.textContent=shot.hit?"✹":"•"}else{e.textContent="";e.disabled=roomData.status!=="playing"||roomData.turn!==uid||!opp}e.onclick=()=>askQuestion(i);$("enemyBoard").appendChild(e);
+let m=document.createElement("button");m.className="cell";if(myBoard[i])m.classList.add("ship");let os=oppShots.find(x=>x.i===i);if(os){m.classList.add(os.hit?"hit":"miss");m.textContent=os.hit?"✹":"•"}$("myBoard").appendChild(m)}
+let status=roomData.status==="waiting"?"Aguardando o adversário entrar com o código "+roomId+".":roomData.status==="finished"?(roomData.winner===uid?"🏆 Você venceu!":"A partida terminou. "+(roomData.players.find(p=>p.uid===roomData.winner)?.name||"Adversário")+" venceu."):(roomData.turn===uid?"Sua vez! Escolha uma casa no tabuleiro adversário.":"Vez de "+(opp?.name||"outro jogador")+". Aguarde.");if(roomData.lastResult)status+=" "+roomData.lastResult;$("gameStatus").textContent=status}
+function askQuestion(i){if(!roomData||roomData.turn!==uid||!enemy())return;if((roomData.shots[uid]||[]).some(s=>s.i===i))return;pendingCell=i;currentQuestion=questions[Math.floor(Math.random()*questions.length)];$("questionText").textContent=currentQuestion[0];$("questionCount").textContent="Pergunta de Química • escolha uma alternativa";$("answerFeedback").classList.add("hidden");$("answerList").innerHTML="";currentQuestion.slice(1,5).forEach((a,n)=>{let b=document.createElement("button");b.textContent=String.fromCharCode(65+n)+") "+a;b.onclick=()=>answer(n);$("answerList").appendChild(b)});$("questionModal").classList.remove("hidden")}
+async function answer(n){let buttons=[...$("answerList").children];buttons.forEach(b=>b.disabled=true);let correct=n===currentQuestion[5];$("answerFeedback").classList.remove("hidden");$("answerFeedback").textContent=correct?"Correto! Disparo liberado.":"Não foi dessa vez! Resposta: "+currentQuestion[currentQuestion[5]+1];try{let ref=db.collection("rooms").doc(roomId);await db.runTransaction(async tx=>{let s=await tx.get(ref);let d=s.data();if(d.turn!==uid||d.status!=="playing")return;let opp=d.players.find(p=>p.uid!==uid);let shot={i:pendingCell,hit:!!d.boards[opp.uid][pendingCell]};let shots={...d.shots,[uid]:correct?[...(d.shots[uid]||[]),shot]:(d.shots[uid]||[])};let remaining=d.boards[opp.uid].filter((v,j)=>v&&!(shots[uid].some(x=>x.i===j&&x.hit))).length;let won=correct&&remaining===0;tx.update(ref,{shots,turn:won?uid:opp.uid,status:won?"finished":"playing",winner:won?uid:null,lastResult:correct?(shot.hit?"Acertou um navio!":"Água!"):"Resposta incorreta. A vez passou."})})}catch(e){$("answerFeedback").textContent="Erro ao registrar jogada: "+e.message}setTimeout(()=>$("questionModal").classList.add("hidden"),1100)}
+$("createBtn").onclick=()=>createRoom().catch(e=>say(e.message));$("joinBtn").onclick=()=>joinRoom().catch(e=>say(e.message));$("copyCode").onclick=()=>navigator.clipboard.writeText(roomId).then(()=>$("gameStatus").textContent="Código "+roomId+" copiado!").catch(()=>alert("Código da sala: "+roomId));initFirebase();
+</script>
+</body></html>

@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Regras iniciais para protótipo escolar. Não armazenar dados pessoais sensíveis.
+    // Para uso público/amplo, implemente validação server-side/Cloud Functions.
+    match /rooms/{roomId} {
+      allow read, create, update: if request.auth != null;
+      allow delete: if false;
+    }
+  }
+}
