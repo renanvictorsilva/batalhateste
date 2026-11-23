@@ -4,86 +4,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#101b35">
-
-  <title>Batalha Digital | Cyberbullying</title>
-
+  <meta name="theme-color" content="#10243d">
+  <title>Batalha dos Alimentos | Química em Jogo</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
-
   <header class="header">
-    <h1>⚓ BATALHA DIGITAL</h1>
-    <p>Uma batalha de conhecimento contra o cyberbullying!</p>
+    <div class="logo">⚓</div>
+    <div>
+      <h1>BATALHA DOS ALIMENTOS</h1>
+      <p>Química em Jogo</p>
+    </div>
   </header>
 
   <main class="container">
 
-    <!-- TELA INICIAL -->
+    <!-- INÍCIO -->
     <section id="homeScreen" class="screen">
-      <div class="card">
-        <h2>Bem-vindo à Batalha Digital!</h2>
-
+      <div class="intro card">
+        <div class="intro-icon">🍎 🧪 🍞</div>
+        <h2>Prepare-se para a batalha!</h2>
         <p>
-          Teste seus conhecimentos sobre cyberbullying,
-          respeito e cidadania digital.
+          Responda aos desafios de Química e Alimentação,
+          descubra as posições do adversário e conquiste a vitória!
         </p>
 
-        <div class="form-group">
-          <label for="playerName">Seu nome:</label>
-          <input
-            type="text"
-            id="playerName"
-            placeholder="Digite seu nome"
-            maxlength="20"
-          >
-        </div>
+        <label for="playerName">Nome do jogador</label>
+        <input id="playerName" type="text" maxlength="20" placeholder="Digite seu nome">
 
         <button id="createRoomBtn" class="btn btn-primary">
-          Criar partida
+          ⚓ Criar partida
         </button>
 
-        <div class="separator">OU</div>
+        <div class="divider"><span>OU</span></div>
 
-        <div class="form-group">
-          <label for="roomCodeInput">Código da sala:</label>
-          <input
-            type="text"
-            id="roomCodeInput"
-            placeholder="Digite o código"
-            maxlength="5"
-          >
-        </div>
+        <label for="roomCodeInput">Código da partida</label>
+        <input id="roomCodeInput" type="text" maxlength="5" placeholder="Digite o código da sala">
 
         <button id="joinRoomBtn" class="btn btn-secondary">
-          Entrar na partida
+          🎮 Entrar na partida
         </button>
 
         <p id="homeMessage" class="message"></p>
+      </div>
+
+      <div class="info-cards">
+        <div class="mini-card">
+          <span>🥗</span>
+          <strong>Alimentação</strong>
+        </div>
+        <div class="mini-card">
+          <span>⚗️</span>
+          <strong>Química</strong>
+        </div>
+        <div class="mini-card">
+          <span>🔥</span>
+          <strong>Energia</strong>
+        </div>
       </div>
     </section>
 
     <!-- SALA DE ESPERA -->
     <section id="lobbyScreen" class="screen hidden">
-      <div class="card">
-        <h2>Sala de espera</h2>
+      <div class="card lobby-card">
+        <h2>⏳ Sala de espera</h2>
+        <p>Compartilhe o código com outro jogador.</p>
 
-        <p>Compartilhe o código com seu adversário:</p>
+        <div id="roomCodeDisplay" class="room-code">-----</div>
 
-        <div id="roomCodeDisplay" class="room-code">
-          -----
-        </div>
+        <button id="copyCodeBtn" class="btn btn-secondary">
+          📋 Copiar código
+        </button>
 
-        <p id="lobbyStatus">
-          Aguardando o segundo jogador...
-        </p>
-
+        <p id="lobbyStatus">Aguardando adversário...</p>
         <div id="playersList"></div>
       </div>
     </section>
@@ -91,57 +89,66 @@
     <!-- JOGO -->
     <section id="gameScreen" class="screen hidden">
 
-      <div class="game-info card">
-        <h2>⚔️ Batalha em andamento</h2>
-
-        <p id="turnMessage"></p>
-        <p id="gameStatus"></p>
+      <div class="game-top card">
+        <div>
+          <span class="eyebrow">PARTIDA EM ANDAMENTO</span>
+          <h2>⚔️ Campo de batalha</h2>
+        </div>
+        <div id="turnMessage" class="turn-message"></div>
+        <div id="gameStatus"></div>
       </div>
 
-      <!-- TABULEIROS -->
       <div class="boards">
 
-        <div class="board-container card">
-          <h3>Seu tabuleiro</h3>
+        <div class="board-panel card">
+          <h3>🛡️ Meu território</h3>
+          <p class="board-description">Suas embarcações</p>
           <div id="myBoard" class="board"></div>
+          <div class="legend">
+            <span>🚢 Embarcação</span>
+            <span>💥 Atingida</span>
+          </div>
         </div>
 
-        <div class="board-container card">
-          <h3>Tabuleiro adversário</h3>
+        <div class="board-panel card">
+          <h3>🎯 Território inimigo</h3>
+          <p class="board-description">Selecione um alvo após acertar</p>
           <div id="enemyBoard" class="board"></div>
+          <div class="legend">
+            <span>🌊 Água</span>
+            <span>💥 Acerto</span>
+            <span>❌ Erro</span>
+          </div>
         </div>
 
       </div>
 
-      <!-- PERGUNTAS -->
-      <div id="questionArea" class="card hidden">
-        <h2>🧠 Desafio do conhecimento</h2>
+      <!-- PERGUNTA -->
+      <div id="questionArea" class="card question-card hidden">
+        <div class="question-header">
+          <span class="question-icon">🧠</span>
+          <div>
+            <span id="questionLevel" class="level-badge">DESAFIO</span>
+            <h2>Desafio de Química</h2>
+          </div>
+        </div>
 
-        <p id="questionLevel"></p>
-        <p id="questionText"></p>
-
+        <p id="questionText" class="question-text"></p>
         <div id="answerOptions" class="answers"></div>
-
-        <p id="answerFeedback"></p>
+        <p id="answerFeedback" class="feedback"></p>
       </div>
 
-      <!-- MENSAGENS -->
-      <div id="gameMessage" class="message"></div>
-
+      <div id="gameMessage" class="game-message"></div>
     </section>
 
-    <!-- FIM DE JOGO -->
+    <!-- FIM -->
     <section id="endScreen" class="screen hidden">
-      <div class="card">
+      <div class="card end-card">
+        <div class="end-icon">🏆</div>
         <h2 id="winnerMessage">Fim de jogo!</h2>
-
         <p id="finalMessage"></p>
-
-        <button
-          onclick="location.reload()"
-          class="btn btn-primary"
-        >
-          Jogar novamente
+        <button onclick="location.reload()" class="btn btn-primary">
+          🔄 Nova partida
         </button>
       </div>
     </section>
@@ -149,10 +156,10 @@
   </main>
 
   <footer>
-    <p>Educação Digital | Aprender, respeitar e compartilhar com responsabilidade.</p>
+    <p>IFA – Química | Tema: Alimentação</p>
+    <p>Aprender Química também é compreender o que consumimos.</p>
   </footer>
 
   <script src="app.js"></script>
-
 </body>
 </html>
