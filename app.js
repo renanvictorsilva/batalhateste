@@ -1,11 +1,10 @@
 // ==========================================
-// QUÍMICA NO COTIDIANO - BATALHA QUÍMICA
+// BATALHA CONTRA O CYBERBULLYING
 // ==========================================
 
 // FIREBASE
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDdj12NqEP1Hxr-rqlJO4ezLBheMuEZfqs",
+  apiKey: "AIzaSyDdj12NqEP1Hxr-rqJ04ezLBheMuEZfqs",
   authDomain: "batalhateste.firebaseapp.com",
   projectId: "batalhateste",
   storageBucket: "batalhateste.firebasestorage.app",
@@ -31,218 +30,383 @@ let usedQuestions = [];
 
 // ==========================================
 // BANCO DE 30 QUESTÕES
+// CYBERBULLYING E SEGURANÇA DIGITAL
 // ==========================================
 
 const questions = [
   {
     level: "Fácil",
-    question: "Quando o gelo derrete, que transformação ocorre?",
-    options: ["Solidificação", "Fusão", "Condensação", "Sublimação"],
+    question: "O que é cyberbullying?",
+    options: [
+      "Uma brincadeira presencial",
+      "Agressão ou intimidação realizada por meios digitais",
+      "Um jogo de computador",
+      "Uma conversa entre amigos"
+    ],
     answer: 1,
-    explanation: "Fusão é a passagem do estado sólido para o líquido."
+    explanation: "Cyberbullying envolve agressões, humilhações ou intimidações por meios digitais."
   },
   {
     level: "Fácil",
-    question: "Por que água e óleo não se misturam facilmente?",
-    options: ["O óleo é mais pesado", "A água é quente", "Possuem polaridades diferentes", "O óleo evapora"],
+    question: "Qual atitude pode ser considerada cyberbullying?",
+    options: [
+      "Enviar uma mensagem de apoio",
+      "Compartilhar um trabalho escolar",
+      "Publicar comentários ofensivos repetidamente sobre alguém",
+      "Conversar respeitosamente"
+    ],
     answer: 2,
-    explanation: "A água é polar e o óleo é predominantemente apolar."
+    explanation: "Comentários ofensivos e repetidos para humilhar alguém podem caracterizar cyberbullying."
   },
   {
     level: "Fácil",
-    question: "Qual é a função do detergente na lavagem?",
-    options: ["Congelar a gordura", "Facilitar a remoção de gordura", "Produzir oxigênio", "Transformar água em óleo"],
-    answer: 1,
-    explanation: "O detergente ajuda a dispersar a gordura na água."
-  },
-  {
-    level: "Fácil",
-    question: "Sentimos o cheiro de perfume à distância devido à:",
-    options: ["Fusão", "Decantação", "Difusão", "Solidificação"],
+    question: "Se você receber uma mensagem ofensiva na internet, o que deve fazer?",
+    options: [
+      "Responder com outra ofensa",
+      "Compartilhar com todos",
+      "Guardar evidências e procurar ajuda",
+      "Criar uma conta falsa para atacar"
+    ],
     answer: 2,
-    explanation: "As partículas do perfume se espalham pelo ar."
+    explanation: "Guardar provas e buscar ajuda de um adulto de confiança é uma atitude segura."
   },
   {
     level: "Fácil",
-    question: "Quando a água ferve e se transforma em vapor, ocorre:",
-    options: ["Condensação", "Vaporização", "Solidificação", "Fusão"],
-    answer: 1,
-    explanation: "Vaporização é a passagem do líquido para o gasoso."
-  },
-  {
-    level: "Fácil",
-    question: "Quando o sal desaparece visualmente ao ser colocado na água, ocorre:",
-    options: ["Combustão", "Dissolução", "Oxidação", "Solidificação"],
-    answer: 1,
-    explanation: "O sal se dissolve, formando uma mistura homogênea."
-  },
-  {
-    level: "Fácil",
-    question: "Por que alimentos duram mais na geladeira?",
-    options: ["O frio elimina tudo", "Diminui a velocidade de reações e o crescimento microbiano", "Os alimentos perdem toda a água", "Ocorre combustão"],
-    answer: 1,
-    explanation: "A baixa temperatura desacelera processos de deterioração."
-  },
-  {
-    level: "Fácil",
-    question: "Qual gás do ar é essencial para a combustão de uma vela?",
-    options: ["Nitrogênio", "Hidrogênio", "Oxigênio", "Hélio"],
+    question: "Qual atitude demonstra respeito nas redes sociais?",
+    options: [
+      "Ridicularizar fotos",
+      "Compartilhar rumores",
+      "Respeitar opiniões e diferenças",
+      "Excluir alguém de propósito para humilhar"
+    ],
     answer: 2,
-    explanation: "O oxigênio participa da reação de combustão."
+    explanation: "Respeito e empatia são fundamentais nas interações online."
   },
   {
     level: "Fácil",
-    question: "As roupas secam mesmo sem sol direto porque ocorre:",
-    options: ["Evaporação", "Congelamento", "Combustão", "Fusão"],
+    question: "O que devemos fazer antes de compartilhar uma foto de outra pessoa?",
+    options: [
+      "Compartilhar imediatamente",
+      "Pedir autorização",
+      "Editar para ridicularizar",
+      "Enviar para desconhecidos"
+    ],
+    answer: 1,
+    explanation: "É importante respeitar a privacidade e pedir autorização antes de compartilhar imagens."
+  },
+  {
+    level: "Fácil",
+    question: "Qual é um exemplo de comportamento seguro na internet?",
+    options: [
+      "Compartilhar senhas",
+      "Clicar em todos os links",
+      "Manter informações pessoais protegidas",
+      "Aceitar todos os desconhecidos"
+    ],
+    answer: 2,
+    explanation: "Proteger informações pessoais ajuda a evitar riscos digitais."
+  },
+  {
+    level: "Fácil",
+    question: "O que significa empatia no ambiente digital?",
+    options: [
+      "Ignorar os sentimentos dos outros",
+      "Pensar em como nossas atitudes afetam outras pessoas",
+      "Publicar sem pensar",
+      "Usar perfis falsos"
+    ],
+    answer: 1,
+    explanation: "Empatia é considerar os sentimentos e a experiência do outro."
+  },
+  {
+    level: "Fácil",
+    question: "Você vê um colega sendo humilhado em um grupo. Qual atitude é mais adequada?",
+    options: [
+      "Curtir as mensagens",
+      "Compartilhar as ofensas",
+      "Não apoiar a agressão e procurar ajuda",
+      "Criar mais memes sobre ele"
+    ],
+    answer: 2,
+    explanation: "Não alimentar as agressões e buscar ajuda são atitudes responsáveis."
+  },
+  {
+    level: "Fácil",
+    question: "Por que devemos ter cuidado com fotos e informações que publicamos?",
+    options: [
+      "Porque podem ser copiadas e compartilhadas por outras pessoas",
+      "Porque desaparecem sempre",
+      "Porque ninguém consegue visualizar",
+      "Porque não têm importância"
+    ],
     answer: 0,
-    explanation: "A água evapora lentamente, passando para o estado gasoso."
+    explanation: "Conteúdos publicados podem ser copiados, armazenados ou compartilhados sem nosso controle."
   },
   {
     level: "Fácil",
-    question: "A ferrugem formada em objetos de ferro é resultado de:",
-    options: ["Transformação química", "Transformação nuclear", "Fusão", "Dissolução"],
-    answer: 0,
-    explanation: "O ferro reage com oxigênio e água, formando ferrugem."
-  },
-  {
-    level: "Médio",
-    question: "Por que o açúcar se dissolve mais rapidamente em água quente?",
-    options: ["O açúcar desaparece", "As partículas se movimentam mais rapidamente", "A água fica apolar", "O açúcar vira gás"],
-    answer: 1,
-    explanation: "O aumento da temperatura acelera a dissolução."
-  },
-  {
-    level: "Médio",
-    question: "Por que uma colher de metal esquenta dentro de uma panela?",
-    options: ["Condução térmica", "Combustão", "Condensação", "Dissolução"],
-    answer: 0,
-    explanation: "O calor se propaga pelo metal por condução."
-  },
-  {
-    level: "Médio",
-    question: "Por que refrigerantes liberam bolhas quando são abertos?",
-    options: ["O açúcar vira oxigênio", "Ocorre congelamento", "O CO₂ dissolvido sai devido à queda da pressão", "O líquido entra em combustão"],
+    question: "Qual atitude NÃO ajuda a combater o cyberbullying?",
+    options: [
+      "Denunciar conteúdo ofensivo",
+      "Acolher a vítima",
+      "Compartilhar a postagem para aumentar a humilhação",
+      "Buscar apoio de um adulto"
+    ],
     answer: 2,
-    explanation: "A redução da pressão favorece a saída do dióxido de carbono."
+    explanation: "Compartilhar conteúdos ofensivos amplia a exposição e o sofrimento da vítima."
   },
+
   {
     level: "Médio",
-    question: "Qual situação representa uma transformação química?",
-    options: ["Cortar papel", "Derreter gelo", "Queimar madeira", "Quebrar vidro"],
-    answer: 2,
-    explanation: "Na queima, novas substâncias são formadas."
-  },
-  {
-    level: "Médio",
-    question: "Por que não devemos misturar água sanitária com outros produtos de limpeza?",
-    options: ["Pode liberar gases tóxicos", "Tudo congela", "Sempre vira água", "A massa desaparece"],
+    question: "Por que compartilhar uma postagem ofensiva, mesmo sem criá-la, pode ser prejudicial?",
+    options: [
+      "Porque ajuda a ampliar a exposição e a humilhação",
+      "Porque apaga automaticamente o conteúdo",
+      "Porque protege a vítima",
+      "Porque impede novas publicações"
+    ],
     answer: 0,
-    explanation: "Algumas misturas podem liberar gases perigosos."
+    explanation: "Compartilhar amplia o alcance da agressão e pode aumentar o sofrimento da vítima."
   },
   {
     level: "Médio",
-    question: "Por que o álcool evapora mais rapidamente que a água?",
-    options: ["Possui maior massa", "Suas interações intermoleculares são menos intensas", "É sólido", "Não possui moléculas"],
+    question: "O que é uma denúncia em uma rede social?",
+    options: [
+      "Uma forma de divulgar uma publicação",
+      "Um recurso para informar a plataforma sobre conteúdo ou comportamento inadequado",
+      "Um comentário público",
+      "Uma maneira de aumentar seguidores"
+    ],
     answer: 1,
-    explanation: "As forças intermoleculares influenciam a evaporação."
+    explanation: "A denúncia permite comunicar conteúdos ou comportamentos que violam as regras da plataforma."
   },
   {
     level: "Médio",
-    question: "A ferrugem se forma principalmente na presença de:",
-    options: ["Oxigênio e umidade", "Hélio e luz", "Apenas nitrogênio", "Açúcar e sal"],
-    answer: 0,
-    explanation: "O oxigênio e a água favorecem a corrosão do ferro."
-  },
-  {
-    level: "Médio",
-    question: "Quando aquecemos uma substância, normalmente suas partículas:",
-    options: ["Param de se movimentar", "Desaparecem", "Movimentam-se mais intensamente", "Viraram átomos"],
+    question: "Por que guardar capturas de tela de mensagens de cyberbullying?",
+    options: [
+      "Para espalhar o conteúdo",
+      "Para usar como meme",
+      "Para registrar evidências do ocorrido",
+      "Para provocar o agressor"
+    ],
     answer: 2,
-    explanation: "O aquecimento aumenta a energia cinética média das partículas."
+    explanation: "As capturas podem ajudar a documentar o ocorrido ao buscar apoio ou fazer uma denúncia."
   },
   {
     level: "Médio",
-    question: "Como o detergente facilita a retirada da gordura?",
-    options: ["Congelando-a", "Facilitando sua dispersão na água", "Transformando-a em metal", "Aumentando sua massa"],
+    question: "Uma pessoa cria um perfil falso para humilhar um colega. Qual problema existe nessa atitude?",
+    options: [
+      "Nenhum, porque o perfil é falso",
+      "A identidade falsa não elimina a responsabilidade pelas agressões",
+      "É permitido em qualquer situação",
+      "A vítima não pode ser afetada"
+    ],
     answer: 1,
-    explanation: "O detergente interage com a gordura e com a água, facilitando a limpeza."
+    explanation: "Perfis falsos também podem ser usados para cometer agressões e causar danos."
   },
   {
     level: "Médio",
-    question: "Como uma pilha fornece energia para um controle remoto?",
-    options: ["Por reações químicas que geram energia elétrica", "Por evaporação", "Por fusão dos metais", "Por produção de água"],
-    answer: 0,
-    explanation: "A pilha transforma energia química em energia elétrica."
-  },
-  {
-    level: "Difícil",
-    question: "Por que alimentos cozinham mais rápido na panela de pressão?",
-    options: ["A água fica mais fria", "A pressão eleva a temperatura de ebulição da água", "Não existe vapor", "O alimento perde toda a massa"],
-    answer: 1,
-    explanation: "A pressão aumenta o ponto de ebulição, permitindo temperaturas maiores."
-  },
-  {
-    level: "Difícil",
-    question: "A gasolina libera energia quando queimada. Esse processo é chamado:",
-    options: ["Condensação", "Combustão", "Dissolução", "Neutralização"],
-    answer: 1,
-    explanation: "Combustão é uma reação que libera energia."
-  },
-  {
-    level: "Difícil",
-    question: "Qual gás liberado pela queima de combustíveis contribui para o efeito estufa?",
-    options: ["Oxigênio", "Hélio", "Dióxido de carbono", "Argônio"],
+    question: "Qual é a melhor atitude ao receber um link suspeito enviado por desconhecido?",
+    options: [
+      "Abrir imediatamente",
+      "Enviar para todos os amigos",
+      "Não clicar e verificar a origem",
+      "Informar a senha para acessar"
+    ],
     answer: 2,
-    explanation: "O CO₂ é um gás de efeito estufa."
+    explanation: "Links suspeitos podem levar a golpes ou páginas maliciosas."
   },
   {
-    level: "Difícil",
-    question: "20 g de sal foram dissolvidos até completar 500 mL de solução. Qual a concentração em g/L?",
-    options: ["10 g/L", "20 g/L", "40 g/L", "50 g/L"],
+    level: "Médio",
+    question: "O que caracteriza uma atitude de testemunha responsável?",
+    options: [
+      "Apoiar as agressões",
+      "Ficar incentivando o agressor",
+      "Buscar formas seguras de ajudar a vítima",
+      "Compartilhar o conteúdo"
+    ],
     answer: 2,
-    explanation: "20 ÷ 0,5 = 40 g/L."
+    explanation: "A testemunha pode apoiar a vítima e buscar ajuda sem se expor a riscos."
   },
   {
-    level: "Difícil",
-    question: "A reação entre bicarbonato de sódio e vinagre libera qual gás?",
-    options: ["Oxigênio", "Dióxido de carbono", "Hidrogênio", "Nitrogênio"],
+    level: "Médio",
+    question: "Por que uma mensagem escrita pode causar mal-entendidos?",
+    options: [
+      "Porque sempre contém imagens",
+      "Porque pode não transmitir tom de voz ou expressão facial",
+      "Porque não pode ser lida",
+      "Porque desaparece instantaneamente"
+    ],
     answer: 1,
-    explanation: "A reação libera CO₂, formando bolhas."
+    explanation: "Mensagens escritas podem não transmitir claramente emoções ou intenções."
   },
   {
-    level: "Difícil",
-    question: "Qual alternativa diferencia corretamente substância pura e mistura?",
-    options: ["Substância pura tem composição definida; mistura reúne substâncias", "Mistura sempre é sólida", "Substância pura sempre é líquida", "Não há diferença"],
+    level: "Médio",
+    question: "O que é privacidade digital?",
+    options: [
+      "Compartilhar tudo publicamente",
+      "Controlar e proteger informações pessoais no ambiente digital",
+      "Deixar todas as contas abertas",
+      "Usar a mesma senha em tudo"
+    ],
+    answer: 1,
+    explanation: "Privacidade digital envolve proteger informações pessoais e controlar seu uso."
+  },
+  {
+    level: "Médio",
+    question: "Qual atitude pode ajudar alguém que está sofrendo cyberbullying?",
+    options: [
+      "Dizer que é frescura",
+      "Culpá-la pelas agressões",
+      "Ouvir, acolher e ajudá-la a buscar apoio",
+      "Expor a situação sem autorização"
+    ],
+    answer: 2,
+    explanation: "Acolhimento, escuta e apoio são importantes para quem sofre agressões."
+  },
+  {
+    level: "Médio",
+    question: "Por que devemos verificar informações antes de compartilhá-las?",
+    options: [
+      "Para evitar espalhar notícias falsas ou prejudiciais",
+      "Para aumentar o número de curtidas",
+      "Para publicar mais rapidamente",
+      "Porque toda mensagem é verdadeira"
+    ],
     answer: 0,
-    explanation: "Substância pura possui composição definida; mistura contém mais de uma substância."
+    explanation: "Verificar informações ajuda a combater desinformação e danos causados por rumores."
+  },
+
+  {
+    level: "Difícil",
+    question: "Uma vítima recebe ataques em diferentes redes sociais. Qual conjunto de ações é mais adequado?",
+    options: [
+      "Responder a todos os ataques",
+      "Guardar evidências, bloquear, denunciar e buscar apoio",
+      "Apagar todas as provas e ficar em silêncio",
+      "Criar perfis para retaliar"
+    ],
+    answer: 1,
+    explanation: "Registrar evidências, usar ferramentas de proteção e procurar apoio são ações recomendadas."
   },
   {
     level: "Difícil",
-    question: "Por que o gelo flutua na água?",
-    options: ["É mais quente", "Possui menor densidade que a água líquida", "Não possui massa", "Água líquida não tem volume"],
-    answer: 1,
-    explanation: "O gelo possui menor densidade que a água líquida."
+    question: "Por que o cyberbullying pode ter efeitos mesmo quando ocorre fora da escola?",
+    options: [
+      "Porque o ambiente digital pode acompanhar a vítima em diferentes momentos e lugares",
+      "Porque só acontece durante as aulas",
+      "Porque não afeta emoções",
+      "Porque desaparece quando o celular é desligado"
+    ],
+    answer: 0,
+    explanation: "A exposição digital pode continuar sendo percebida e gerar sofrimento em diferentes contextos."
   },
   {
     level: "Difícil",
-    question: "Por que aumentar a temperatura pode acelerar uma reação química?",
-    options: ["Elimina moléculas", "Aumenta colisões efetivas entre partículas", "Impede colisões", "Transforma reagentes em gases"],
+    question: "Qual alternativa descreve melhor a diferença entre conflito e cyberbullying?",
+    options: [
+      "São sempre a mesma coisa",
+      "Cyberbullying envolve agressões e desequilíbrio de poder, podendo ser repetido; conflito pode ocorrer entre pessoas em condições semelhantes",
+      "Conflito nunca existe na internet",
+      "Cyberbullying só acontece entre adultos"
+    ],
     answer: 1,
-    explanation: "Partículas com maior energia têm mais chances de realizar colisões efetivas."
+    explanation: "Cyberbullying pode envolver repetição, intenção de causar dano e desequilíbrio de poder."
   },
   {
     level: "Difícil",
-    question: "Por que reciclar alumínio economiza energia?",
-    options: ["O alumínio reciclado não tem átomos", "Evita parte da produção a partir do minério", "Deixa de ser metal", "Não utiliza energia"],
-    answer: 1,
-    explanation: "Reciclar reduz a necessidade de extrair e processar minério."
+    question: "Por que a divulgação de um conteúdo íntimo sem autorização é grave?",
+    options: [
+      "Porque pode violar privacidade e causar danos à pessoa exposta",
+      "Porque aumenta a popularidade",
+      "Porque é sempre uma brincadeira",
+      "Porque não tem consequências"
+    ],
+    answer: 0,
+    explanation: "A divulgação sem consentimento pode causar danos emocionais, sociais e também consequências legais."
   },
   {
     level: "Difícil",
-    question: "Uma lâmpada transforma energia elétrica principalmente em:",
-    options: ["Energia química e nuclear", "Energia luminosa e térmica", "Energia mecânica", "Energia sonora"],
+    question: "Um estudante é pressionado a participar de um grupo que ridiculariza outro colega. Qual atitude demonstra responsabilidade?",
+    options: [
+      "Participar para não ser excluído",
+      "Compartilhar as mensagens",
+      "Não colaborar com as agressões e procurar apoio",
+      "Criar novas ofensas"
+    ],
+    answer: 2,
+    explanation: "Não participar das agressões e buscar ajuda contribui para interromper o ciclo de violência."
+  },
+  {
+    level: "Difícil",
+    question: "Qual é o papel da escola no enfrentamento do cyberbullying?",
+    options: [
+      "Ignorar porque ocorre online",
+      "Promover orientação, acolhimento, prevenção e encaminhamentos",
+      "Culpar sempre a vítima",
+      "Incentivar exposição pública"
+    ],
     answer: 1,
-    explanation: "A lâmpada produz luz e também calor."
+    explanation: "A escola pode desenvolver ações educativas, acolher envolvidos e acionar procedimentos adequados."
+  },
+  {
+    level: "Difícil",
+    question: "Por que não é adequado tentar resolver o cyberbullying apenas com vingança?",
+    options: [
+      "Porque pode intensificar as agressões e criar novos danos",
+      "Porque a vingança sempre resolve",
+      "Porque não existe internet",
+      "Porque a vítima não tem direitos"
+    ],
+    answer: 0,
+    explanation: "Retaliações podem ampliar o conflito e dificultar uma solução segura."
+  },
+  {
+    level: "Difícil",
+    question: "Qual é uma consequência possível do cyberbullying para a vítima?",
+    options: [
+      "Somente diversão",
+      "Ansiedade, tristeza, isolamento ou dificuldades escolares",
+      "Sempre melhora o desempenho",
+      "Nenhuma consequência"
+    ],
+    answer: 1,
+    explanation: "O cyberbullying pode afetar o bem-estar emocional, social e escolar."
+  },
+  {
+    level: "Difícil",
+    question: "O que significa agir com responsabilidade ao publicar algo na internet?",
+    options: [
+      "Publicar sem pensar",
+      "Considerar consequências, privacidade e respeito às outras pessoas",
+      "Compartilhar tudo que recebemos",
+      "Usar anonimato para ofender"
+    ],
+    answer: 1,
+    explanation: "Responsabilidade digital envolve pensar antes de publicar e respeitar outras pessoas."
+  },
+  {
+    level: "Difícil",
+    question: "Qual estratégia é mais eficaz para prevenir cyberbullying em uma comunidade escolar?",
+    options: [
+      "Punir sem conversar",
+      "Ignorar as situações",
+      "Combinar educação digital, empatia, canais de apoio e participação dos estudantes",
+      "Proibir qualquer conversa"
+    ],
+    answer: 2,
+    explanation: "Prevenção envolve educação, diálogo, apoio e ações coletivas contínuas."
+  },
+  {
+    level: "Difícil",
+    question: "Ao perceber que uma postagem está causando humilhação a um colega, qual atitude é mais responsável?",
+    options: [
+      "Repostar para mais pessoas",
+      "Curtir e comentar",
+      "Não ampliar o alcance, apoiar a pessoa e denunciar o conteúdo",
+      "Fazer uma montagem"
+    ],
+    answer: 2,
+    explanation: "Evitar compartilhar, apoiar a vítima e denunciar ajuda a reduzir a propagação da agressão."
   }
 ];
 
@@ -290,11 +454,13 @@ const finalMessage = document.getElementById("finalMessage");
 auth.signInAnonymously()
   .then(result => {
     currentUser = result.user;
-    homeMessage.textContent = "Conectado! Você pode criar ou entrar em uma partida.";
+    homeMessage.textContent =
+      "Conectado! Você pode criar ou entrar em uma partida.";
   })
   .catch(error => {
     console.error("Erro Firebase:", error);
-    homeMessage.textContent = "Erro de conexão Firebase: " + error.message;
+    homeMessage.textContent =
+      "Erro de conexão Firebase: " + error.message;
   });
 
 // ==========================================
@@ -311,8 +477,7 @@ function showScreen(screen) {
 }
 
 function getPlayerName() {
-  const name = playerNameInput.value.trim();
-  return name || "Jogador";
+  return playerNameInput.value.trim() || "Jogador";
 }
 
 function generateRoomCode() {
@@ -338,14 +503,13 @@ function createShips() {
         const c = horizontal ? col + i : col;
 
         if (r >= 8 || c >= 8) break;
+
         cells.push(r * 8 + c);
       }
 
       if (cells.length !== length) continue;
 
-      const overlap = cells.some(cell =>
-        ships.flat().includes(cell)
-      );
+      const overlap = cells.some(cell => ships.flat().includes(cell));
 
       if (!overlap) {
         ships.push(cells);
@@ -392,15 +556,14 @@ function randomQuestion() {
     usedQuestions = [];
   }
 
-  let available = questions.filter((q, i) =>
+  const available = questions.filter((q, i) =>
     !usedQuestions.includes(i)
   );
 
   const index = Math.floor(Math.random() * available.length);
   const question = available[index];
 
-  const originalIndex = questions.indexOf(question);
-  usedQuestions.push(originalIndex);
+  usedQuestions.push(questions.indexOf(question));
 
   return question;
 }
@@ -420,7 +583,6 @@ createRoomBtn.addEventListener("click", async () => {
 
   try {
     const code = generateRoomCode();
-
     const player = createPlayer(getPlayerName());
 
     roomRef = db.collection("rooms").doc(code);
@@ -543,8 +705,8 @@ function listenRoom(code) {
     if (!snapshot.exists) return;
 
     currentRoom = snapshot.data();
-
     renderRoom();
+
   }, error => {
     console.error("Erro ao acompanhar sala:", error);
     lobbyStatus.textContent = "Erro ao conectar à sala.";
@@ -552,7 +714,7 @@ function listenRoom(code) {
 }
 
 // ==========================================
-// RENDERIZAR
+// RENDERIZAR SALA
 // ==========================================
 
 function renderRoom() {
@@ -657,7 +819,9 @@ function renderGame() {
   renderBoard(enemyBoard, opponent, true);
 
   if (isMyTurn()) {
-    turnMessage.textContent = "🎯 É sua vez! Responda à pergunta para atacar.";
+    turnMessage.textContent =
+      "🎯 É sua vez! Responda à pergunta para atacar.";
+
     gameStatus.textContent = "Sua vez";
     gameStatus.style.background = "#d9f7e5";
     gameStatus.style.color = "#16733c";
@@ -665,11 +829,13 @@ function renderGame() {
     if (!canAttack && !questionPending) {
       startQuestion();
     }
+
   } else {
     turnMessage.textContent = "⏳ Aguardando jogada do adversário...";
     gameStatus.textContent = "Aguardando";
     gameStatus.style.background = "#e8f1f8";
     gameStatus.style.color = "#45708c";
+
     canAttack = false;
     questionPending = false;
     questionArea.classList.add("hidden");
@@ -713,13 +879,17 @@ function answerQuestion(index, q, selectedButton) {
 
   if (index === q.answer) {
     selectedButton.classList.add("correct");
-    answerFeedback.textContent = "✅ Resposta correta! Escolha uma posição no tabuleiro adversário.";
+    answerFeedback.textContent =
+      "✅ Resposta correta! Escolha uma posição no tabuleiro adversário.";
+
     canAttack = true;
     questionPending = false;
     renderGame();
+
   } else {
     selectedButton.classList.add("wrong");
-    answerFeedback.textContent = "❌ Resposta incorreta! " + q.explanation + " A vez será passada.";
+    answerFeedback.textContent =
+      "❌ Resposta incorreta! " + q.explanation + " A vez será passada.";
 
     questionPending = false;
     canAttack = false;
@@ -736,9 +906,8 @@ async function attack(index) {
   if (busy || !canAttack || !isMyTurn()) return;
 
   const opponentIndex = getOpponentIndex();
-  const myIndex = getMyIndex();
 
-  if (opponentIndex < 0 || myIndex < 0) return;
+  if (opponentIndex < 0) return;
 
   const opponent = currentRoom.players[opponentIndex];
 
@@ -763,7 +932,9 @@ async function attack(index) {
       const players = data.players;
       const enemyIndex = players.findIndex(p => p.uid !== currentUser.uid);
 
-      if (enemyIndex < 0) throw new Error("Adversário não encontrado.");
+      if (enemyIndex < 0) {
+        throw new Error("Adversário não encontrado.");
+      }
 
       const enemy = players[enemyIndex];
 
@@ -804,6 +975,7 @@ async function attack(index) {
   } catch (error) {
     console.error(error);
     showMessage(error.message);
+
   } finally {
     busy = false;
   }
@@ -819,23 +991,31 @@ async function passTurn() {
   busy = true;
 
   try {
+    const nextPlayer = currentRoom.players.find(
+      p => p.uid !== currentUser.uid
+    );
+
+    if (!nextPlayer) return;
+
     await roomRef.update({
-      turn: currentRoom.players.find(p => p.uid !== currentUser.uid).uid
+      turn: nextPlayer.uid
     });
+
   } catch (error) {
     console.error(error);
+
   } finally {
     busy = false;
   }
 }
 
 // ==========================================
-// FINAL
+// FINAL DO JOGO
 // ==========================================
 
 function renderEnd() {
-  const winner = currentRoom.players.find(p =>
-    p.uid === currentRoom.winner
+  const winner = currentRoom.players.find(
+    p => p.uid === currentRoom.winner
   );
 
   winnerMessage.textContent = winner
@@ -847,7 +1027,7 @@ function renderEnd() {
 }
 
 // ==========================================
-// ERROS GERAIS
+// ERROS
 // ==========================================
 
 window.addEventListener("error", event => {

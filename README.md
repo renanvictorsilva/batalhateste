@@ -1,52 +1,58 @@
-# ⚗️ Química no Cotidiano — Batalha Química
+# 🛡️ Batalha contra o Cyberbullying
 
-Um jogo educativo multiplayer online que combina conhecimentos de Química com uma batalha naval. Os jogadores precisam responder a perguntas sobre situações do cotidiano para liberar ataques e tentar localizar os navios do adversário.
+Jogo educativo multiplayer desenvolvido para promover conscientização sobre cyberbullying, respeito, empatia e segurança no ambiente digital.
 
 ## 🎮 Sobre o jogo
 
-A Batalha Química foi desenvolvida para tornar o aprendizado de Química mais interativo, divertido e contextualizado, aproximando conceitos científicos das experiências vivenciadas pelos estudantes.
+A Batalha contra o Cyberbullying utiliza a dinâmica de batalha naval para trabalhar conceitos relacionados à cidadania digital e ao uso responsável da internet.
 
-Os participantes competem entre si em uma batalha naval, respondendo a perguntas antes de realizar seus ataques.
+Os jogadores enfrentam desafios e respondem a perguntas antes de realizar ataques ao tabuleiro adversário.
 
-## 🧪 Temas abordados
+## 🎯 Objetivos
 
-As questões envolvem situações cotidianas relacionadas a:
+- Compreender o conceito de cyberbullying.
+- Identificar atitudes de violência e desrespeito no ambiente digital.
+- Desenvolver empatia e responsabilidade digital.
+- Refletir sobre privacidade e segurança online.
+- Reconhecer formas de prevenção e enfrentamento.
+- Incentivar atitudes de respeito nas redes sociais.
 
-- Transformações físicas e químicas
-- Estados físicos da matéria
-- Dissolução e solubilidade
-- Misturas e separação de substâncias
-- Temperatura e calor
-- Reações químicas
-- Combustão
-- Oxidação e corrosão
-- Produtos de limpeza
-- Energia e eletricidade
-- Química ambiental
-- Densidade
-- Concentração de soluções
+## 📚 Conteúdos abordados
+
+- Cyberbullying
+- Empatia e respeito
+- Cidadania digital
+- Segurança na internet
+- Privacidade
+- Redes sociais
+- Fake news
+- Exposição de imagens
+- Denúncia de conteúdos
+- Responsabilidade digital
+- Direitos no ambiente virtual
+- Comportamento online
 
 ## 🕹️ Como jogar
 
 1. Digite seu nome.
-2. Crie uma partida ou entre em uma sala utilizando um código.
-3. Compartilhe o código com outro jogador.
-4. Aguarde os dois jogadores entrarem.
-5. Durante sua vez, responda a uma questão de Química.
-6. Se acertar, poderá escolher uma posição no tabuleiro adversário para atacar.
-7. Se errar, sua vez será passada ao adversário.
-8. Descubra e acerte todos os navios do oponente para vencer.
+2. Crie uma partida ou entre em uma sala.
+3. Compartilhe o código da sala com outro jogador.
+4. Aguarde a conexão dos dois jogadores.
+5. Responda às perguntas sobre Cyberbullying.
+6. Se acertar, poderá realizar um ataque ao tabuleiro adversário.
+7. Se errar, sua vez será passada.
+8. Localize todos os navios do adversário para vencer.
 
 ## 📋 Regras
 
-- A partida é disputada entre dois jogadores.
-- Cada jogador possui um tabuleiro 8 × 8.
-- Os navios são posicionados automaticamente.
-- As perguntas possuem diferentes níveis de dificuldade.
-- As questões são sorteadas sem repetição até que o banco seja utilizado.
-- Respostas corretas liberam o ataque.
-- Respostas incorretas passam a vez.
-- Vence quem acertar todas as posições ocupadas pelos navios adversários.
+- Dois jogadores por partida.
+- Tabuleiros de 8 × 8.
+- Navios posicionados automaticamente.
+- Perguntas divididas em três níveis de dificuldade.
+- Questões sorteadas sem repetição até o banco ser utilizado.
+- Resposta correta libera o ataque.
+- Resposta incorreta passa a vez.
+- Vence quem acertar todas as posições dos navios adversários.
 
 ## 🛠️ Tecnologias utilizadas
 
@@ -59,14 +65,12 @@ As questões envolvem situações cotidianas relacionadas a:
 
 ## 🌐 Acesso ao jogo
 
-O jogo pode ser acessado pelo navegador:
-
 https://renanvictorsilva.github.io/batalhateste/
 
-## 🎓 Objetivo educacional
+## 🎓 Finalidade educacional
 
-Promover a aprendizagem de conceitos químicos por meio de uma experiência gamificada, incentivando o raciocínio, a resolução de problemas, a participação e a aplicação da Química em situações reais.
+Promover reflexão sobre comportamentos no ambiente digital por meio da gamificação, incentivando o respeito, a empatia, o pensamento crítico e a participação responsável dos estudantes.
 
 ---
 
-Desenvolvido como recurso educacional para o ensino de Química.
+Projeto educativo: Batalha contra o Cyberbullying.
