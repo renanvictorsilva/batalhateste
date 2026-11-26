@@ -1,165 +1,169 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#10243d">
-  <title>Batalha dos Alimentos | Química em Jogo</title>
+  <title>Química no Cotidiano - Batalha Química</title>
   <link rel="stylesheet" href="style.css">
-
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 </head>
-
 <body>
-  <header class="header">
-    <div class="logo">⚓</div>
+
+<header class="header">
+  <div class="brand">
+    <div class="logo">⚗️</div>
     <div>
-      <h1>BATALHA DOS ALIMENTOS</h1>
-      <p>Química em Jogo</p>
+      <h1>QUÍMICA NO COTIDIANO</h1>
+      <p>Batalha Química</p>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="container">
+<main class="container">
 
-    <!-- INÍCIO -->
-    <section id="homeScreen" class="screen">
-      <div class="intro card">
-        <div class="intro-icon">🍎 🧪 🍞</div>
-        <h2>Prepare-se para a batalha!</h2>
-        <p>
-          Responda aos desafios de Química e Alimentação,
-          descubra as posições do adversário e conquiste a vitória!
-        </p>
+  <!-- TELA INICIAL -->
+  <section id="homeScreen" class="screen">
+    <div class="card home-card">
 
-        <label for="playerName">Nome do jogador</label>
-        <input id="playerName" type="text" maxlength="20" placeholder="Digite seu nome">
+      <div class="hero-icons">🧪 ⚡ 🧬</div>
 
-        <button id="createRoomBtn" class="btn btn-primary">
-          ⚓ Criar partida
-        </button>
+      <h2>Prepare-se para a batalha!</h2>
 
-        <div class="divider"><span>OU</span></div>
+      <p class="intro">
+        Desafie seus conhecimentos sobre Química presente
+        no seu dia a dia. Responda às questões, descubra
+        as posições do adversário e conquiste a vitória!
+      </p>
 
-        <label for="roomCodeInput">Código da partida</label>
-        <input id="roomCodeInput" type="text" maxlength="5" placeholder="Digite o código da sala">
+      <label for="playerName">Nome do jogador</label>
+      <input id="playerName" maxlength="15" placeholder="Digite seu nome">
 
-        <button id="joinRoomBtn" class="btn btn-secondary">
-          🎮 Entrar na partida
-        </button>
+      <button id="createRoomBtn" class="btn primary">
+        🧪 Criar partida
+      </button>
 
-        <p id="homeMessage" class="message"></p>
-      </div>
+      <div class="separator">OU</div>
 
-      <div class="info-cards">
-        <div class="mini-card">
-          <span>🥗</span>
-          <strong>Alimentação</strong>
-        </div>
-        <div class="mini-card">
-          <span>⚗️</span>
-          <strong>Química</strong>
-        </div>
-        <div class="mini-card">
-          <span>🔥</span>
-          <strong>Energia</strong>
-        </div>
-      </div>
-    </section>
+      <label for="roomCodeInput">Código da partida</label>
+      <input id="roomCodeInput" maxlength="5"
+             placeholder="Digite o código da sala"
+             style="text-transform:uppercase">
 
-    <!-- SALA DE ESPERA -->
-    <section id="lobbyScreen" class="screen hidden">
-      <div class="card lobby-card">
-        <h2>⏳ Sala de espera</h2>
-        <p>Compartilhe o código com outro jogador.</p>
+      <button id="joinRoomBtn" class="btn secondary">
+        🎮 Entrar na partida
+      </button>
 
-        <div id="roomCodeDisplay" class="room-code">-----</div>
+      <p id="homeMessage" class="message"></p>
+    </div>
+  </section>
 
-        <button id="copyCodeBtn" class="btn btn-secondary">
-          📋 Copiar código
-        </button>
+  <!-- SALA DE ESPERA -->
+  <section id="lobbyScreen" class="screen hidden">
+    <div class="card">
 
-        <p id="lobbyStatus">Aguardando adversário...</p>
-        <div id="playersList"></div>
-      </div>
-    </section>
+      <h2>⏳ Sala de espera</h2>
 
-    <!-- JOGO -->
-    <section id="gameScreen" class="screen hidden">
+      <p>Compartilhe o código com outro jogador.</p>
 
-      <div class="game-top card">
-        <div>
-          <span class="eyebrow">PARTIDA EM ANDAMENTO</span>
-          <h2>⚔️ Campo de batalha</h2>
-        </div>
-        <div id="turnMessage" class="turn-message"></div>
-        <div id="gameStatus"></div>
-      </div>
-
-      <div class="boards">
-
-        <div class="board-panel card">
-          <h3>🛡️ Meu território</h3>
-          <p class="board-description">Suas embarcações</p>
-          <div id="myBoard" class="board"></div>
-          <div class="legend">
-            <span>🚢 Embarcação</span>
-            <span>💥 Atingida</span>
-          </div>
-        </div>
-
-        <div class="board-panel card">
-          <h3>🎯 Território inimigo</h3>
-          <p class="board-description">Selecione um alvo após acertar</p>
-          <div id="enemyBoard" class="board"></div>
-          <div class="legend">
-            <span>🌊 Água</span>
-            <span>💥 Acerto</span>
-            <span>❌ Erro</span>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- PERGUNTA -->
-      <div id="questionArea" class="card question-card hidden">
-        <div class="question-header">
-          <span class="question-icon">🧠</span>
-          <div>
-            <span id="questionLevel" class="level-badge">DESAFIO</span>
-            <h2>Desafio de Química</h2>
-          </div>
-        </div>
-
-        <p id="questionText" class="question-text"></p>
-        <div id="answerOptions" class="answers"></div>
-        <p id="answerFeedback" class="feedback"></p>
-      </div>
-
-      <div id="gameMessage" class="game-message"></div>
-    </section>
-
-    <!-- FIM -->
-    <section id="endScreen" class="screen hidden">
-      <div class="card end-card">
-        <div class="end-icon">🏆</div>
-        <h2 id="winnerMessage">Fim de jogo!</h2>
-        <p id="finalMessage"></p>
-        <button onclick="location.reload()" class="btn btn-primary">
-          🔄 Nova partida
+      <div class="room-code-box">
+        <span id="roomCodeDisplay">-----</span>
+        <button id="copyCodeBtn" class="btn small">
+          📋 Copiar
         </button>
       </div>
-    </section>
 
-  </main>
+      <p id="lobbyStatus" class="message">
+        Aguardando outro jogador...
+      </p>
 
-  <footer>
-    <p>IFA – Química | Tema: Alimentação</p>
-    <p>Aprender Química também é compreender o que consumimos.</p>
-  </footer>
+      <h3>Jogadores</h3>
+      <div id="playersList" class="players-list"></div>
 
-  <script src="app.js"></script>
+      <p class="hint">
+        A partida começará automaticamente quando os dois jogadores entrarem.
+      </p>
+    </div>
+  </section>
+
+  <!-- JOGO -->
+  <section id="gameScreen" class="screen hidden">
+
+    <div class="game-top card">
+      <div>
+        <h2>⚗️ Batalha Química</h2>
+        <p id="turnMessage">Preparando partida...</p>
+      </div>
+
+      <div id="gameStatus" class="status-badge">Aguardando</div>
+    </div>
+
+    <div class="game-message" id="gameMessage"></div>
+
+    <div class="boards">
+
+      <div class="board-card card">
+        <h3>🛡️ Meu tabuleiro</h3>
+        <p class="board-subtitle">Proteja seus navios!</p>
+        <div id="myBoard" class="board"></div>
+        <div class="legend">
+          <span>🟦 Navio</span>
+          <span>💥 Atingido</span>
+          <span>⬜ Água</span>
+        </div>
+      </div>
+
+      <div class="board-card card">
+        <h3>🎯 Tabuleiro adversário</h3>
+        <p class="board-subtitle">Descubra as posições!</p>
+        <div id="enemyBoard" class="board"></div>
+        <div class="legend">
+          <span>💥 Acerto</span>
+          <span>⭕ Erro</span>
+          <span>❓ Desconhecido</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PERGUNTA -->
+    <div id="questionArea" class="card question-card hidden">
+      <div class="question-header">
+        <span id="questionLevel" class="level-badge">Nível</span>
+        <span>🧠 Desafio de Química</span>
+      </div>
+
+      <h3 id="questionText"></h3>
+
+      <div id="answerOptions" class="answer-options"></div>
+
+      <p id="answerFeedback" class="answer-feedback"></p>
+    </div>
+
+  </section>
+
+  <!-- FIM DO JOGO -->
+  <section id="endScreen" class="screen hidden">
+    <div class="card end-card">
+      <div class="end-icon">🏆</div>
+      <h2 id="winnerMessage">Fim de jogo!</h2>
+      <p id="finalMessage"></p>
+      <button class="btn primary" onclick="location.reload()">
+        🔄 Jogar novamente
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Química no Cotidiano • Aprender também é uma batalha!</p>
+</footer>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+<script src="app.js"></script>
+
 </body>
 </html>

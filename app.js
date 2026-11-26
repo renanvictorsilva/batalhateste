@@ -1,13 +1,10 @@
+// ==========================================
+// QUÍMICA NO COTIDIANO - BATALHA QUÍMICA
+// ==========================================
 
-/* =========================================================
-   BATALHA DOS ALIMENTOS - QUÍMICA EM JOGO
-   IFA - Tema: Alimentação
-   ========================================================= */
-
-// 1. FIREBASE
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// FIREBASE
 const firebaseConfig = {
-  apiKey: "AIzaSyDdj12NqEP1Hxr-rqlJO4ezLBheMuEZfqs",
+  apiKey: "AIzaSyDdj12NqEP1Hxr-rqJ04ezLBheMuEZfqs",
   authDomain: "batalhateste.firebaseapp.com",
   projectId: "batalhateste",
   storageBucket: "batalhateste.firebasestorage.app",
@@ -21,7 +18,237 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// 2. ELEMENTOS HTML
+let currentUser = null;
+let currentRoom = null;
+let roomRef = null;
+let unsubscribeRoom = null;
+
+let busy = false;
+let canAttack = false;
+let questionPending = false;
+let usedQuestions = [];
+
+// ==========================================
+// BANCO DE 30 QUESTÕES
+// ==========================================
+
+const questions = [
+  {
+    level: "Fácil",
+    question: "Quando o gelo derrete, que transformação ocorre?",
+    options: ["Solidificação", "Fusão", "Condensação", "Sublimação"],
+    answer: 1,
+    explanation: "Fusão é a passagem do estado sólido para o líquido."
+  },
+  {
+    level: "Fácil",
+    question: "Por que água e óleo não se misturam facilmente?",
+    options: ["O óleo é mais pesado", "A água é quente", "Possuem polaridades diferentes", "O óleo evapora"],
+    answer: 2,
+    explanation: "A água é polar e o óleo é predominantemente apolar."
+  },
+  {
+    level: "Fácil",
+    question: "Qual é a função do detergente na lavagem?",
+    options: ["Congelar a gordura", "Facilitar a remoção de gordura", "Produzir oxigênio", "Transformar água em óleo"],
+    answer: 1,
+    explanation: "O detergente ajuda a dispersar a gordura na água."
+  },
+  {
+    level: "Fácil",
+    question: "Sentimos o cheiro de perfume à distância devido à:",
+    options: ["Fusão", "Decantação", "Difusão", "Solidificação"],
+    answer: 2,
+    explanation: "As partículas do perfume se espalham pelo ar."
+  },
+  {
+    level: "Fácil",
+    question: "Quando a água ferve e se transforma em vapor, ocorre:",
+    options: ["Condensação", "Vaporização", "Solidificação", "Fusão"],
+    answer: 1,
+    explanation: "Vaporização é a passagem do líquido para o gasoso."
+  },
+  {
+    level: "Fácil",
+    question: "Quando o sal desaparece visualmente ao ser colocado na água, ocorre:",
+    options: ["Combustão", "Dissolução", "Oxidação", "Solidificação"],
+    answer: 1,
+    explanation: "O sal se dissolve, formando uma mistura homogênea."
+  },
+  {
+    level: "Fácil",
+    question: "Por que alimentos duram mais na geladeira?",
+    options: ["O frio elimina tudo", "Diminui a velocidade de reações e o crescimento microbiano", "Os alimentos perdem toda a água", "Ocorre combustão"],
+    answer: 1,
+    explanation: "A baixa temperatura desacelera processos de deterioração."
+  },
+  {
+    level: "Fácil",
+    question: "Qual gás do ar é essencial para a combustão de uma vela?",
+    options: ["Nitrogênio", "Hidrogênio", "Oxigênio", "Hélio"],
+    answer: 2,
+    explanation: "O oxigênio participa da reação de combustão."
+  },
+  {
+    level: "Fácil",
+    question: "As roupas secam mesmo sem sol direto porque ocorre:",
+    options: ["Evaporação", "Congelamento", "Combustão", "Fusão"],
+    answer: 0,
+    explanation: "A água evapora lentamente, passando para o estado gasoso."
+  },
+  {
+    level: "Fácil",
+    question: "A ferrugem formada em objetos de ferro é resultado de:",
+    options: ["Transformação química", "Transformação nuclear", "Fusão", "Dissolução"],
+    answer: 0,
+    explanation: "O ferro reage com oxigênio e água, formando ferrugem."
+  },
+  {
+    level: "Médio",
+    question: "Por que o açúcar se dissolve mais rapidamente em água quente?",
+    options: ["O açúcar desaparece", "As partículas se movimentam mais rapidamente", "A água fica apolar", "O açúcar vira gás"],
+    answer: 1,
+    explanation: "O aumento da temperatura acelera a dissolução."
+  },
+  {
+    level: "Médio",
+    question: "Por que uma colher de metal esquenta dentro de uma panela?",
+    options: ["Condução térmica", "Combustão", "Condensação", "Dissolução"],
+    answer: 0,
+    explanation: "O calor se propaga pelo metal por condução."
+  },
+  {
+    level: "Médio",
+    question: "Por que refrigerantes liberam bolhas quando são abertos?",
+    options: ["O açúcar vira oxigênio", "Ocorre congelamento", "O CO₂ dissolvido sai devido à queda da pressão", "O líquido entra em combustão"],
+    answer: 2,
+    explanation: "A redução da pressão favorece a saída do dióxido de carbono."
+  },
+  {
+    level: "Médio",
+    question: "Qual situação representa uma transformação química?",
+    options: ["Cortar papel", "Derreter gelo", "Queimar madeira", "Quebrar vidro"],
+    answer: 2,
+    explanation: "Na queima, novas substâncias são formadas."
+  },
+  {
+    level: "Médio",
+    question: "Por que não devemos misturar água sanitária com outros produtos de limpeza?",
+    options: ["Pode liberar gases tóxicos", "Tudo congela", "Sempre vira água", "A massa desaparece"],
+    answer: 0,
+    explanation: "Algumas misturas podem liberar gases perigosos."
+  },
+  {
+    level: "Médio",
+    question: "Por que o álcool evapora mais rapidamente que a água?",
+    options: ["Possui maior massa", "Suas interações intermoleculares são menos intensas", "É sólido", "Não possui moléculas"],
+    answer: 1,
+    explanation: "As forças intermoleculares influenciam a evaporação."
+  },
+  {
+    level: "Médio",
+    question: "A ferrugem se forma principalmente na presença de:",
+    options: ["Oxigênio e umidade", "Hélio e luz", "Apenas nitrogênio", "Açúcar e sal"],
+    answer: 0,
+    explanation: "O oxigênio e a água favorecem a corrosão do ferro."
+  },
+  {
+    level: "Médio",
+    question: "Quando aquecemos uma substância, normalmente suas partículas:",
+    options: ["Param de se movimentar", "Desaparecem", "Movimentam-se mais intensamente", "Viraram átomos"],
+    answer: 2,
+    explanation: "O aquecimento aumenta a energia cinética média das partículas."
+  },
+  {
+    level: "Médio",
+    question: "Como o detergente facilita a retirada da gordura?",
+    options: ["Congelando-a", "Facilitando sua dispersão na água", "Transformando-a em metal", "Aumentando sua massa"],
+    answer: 1,
+    explanation: "O detergente interage com a gordura e com a água, facilitando a limpeza."
+  },
+  {
+    level: "Médio",
+    question: "Como uma pilha fornece energia para um controle remoto?",
+    options: ["Por reações químicas que geram energia elétrica", "Por evaporação", "Por fusão dos metais", "Por produção de água"],
+    answer: 0,
+    explanation: "A pilha transforma energia química em energia elétrica."
+  },
+  {
+    level: "Difícil",
+    question: "Por que alimentos cozinham mais rápido na panela de pressão?",
+    options: ["A água fica mais fria", "A pressão eleva a temperatura de ebulição da água", "Não existe vapor", "O alimento perde toda a massa"],
+    answer: 1,
+    explanation: "A pressão aumenta o ponto de ebulição, permitindo temperaturas maiores."
+  },
+  {
+    level: "Difícil",
+    question: "A gasolina libera energia quando queimada. Esse processo é chamado:",
+    options: ["Condensação", "Combustão", "Dissolução", "Neutralização"],
+    answer: 1,
+    explanation: "Combustão é uma reação que libera energia."
+  },
+  {
+    level: "Difícil",
+    question: "Qual gás liberado pela queima de combustíveis contribui para o efeito estufa?",
+    options: ["Oxigênio", "Hélio", "Dióxido de carbono", "Argônio"],
+    answer: 2,
+    explanation: "O CO₂ é um gás de efeito estufa."
+  },
+  {
+    level: "Difícil",
+    question: "20 g de sal foram dissolvidos até completar 500 mL de solução. Qual a concentração em g/L?",
+    options: ["10 g/L", "20 g/L", "40 g/L", "50 g/L"],
+    answer: 2,
+    explanation: "20 ÷ 0,5 = 40 g/L."
+  },
+  {
+    level: "Difícil",
+    question: "A reação entre bicarbonato de sódio e vinagre libera qual gás?",
+    options: ["Oxigênio", "Dióxido de carbono", "Hidrogênio", "Nitrogênio"],
+    answer: 1,
+    explanation: "A reação libera CO₂, formando bolhas."
+  },
+  {
+    level: "Difícil",
+    question: "Qual alternativa diferencia corretamente substância pura e mistura?",
+    options: ["Substância pura tem composição definida; mistura reúne substâncias", "Mistura sempre é sólida", "Substância pura sempre é líquida", "Não há diferença"],
+    answer: 0,
+    explanation: "Substância pura possui composição definida; mistura contém mais de uma substância."
+  },
+  {
+    level: "Difícil",
+    question: "Por que o gelo flutua na água?",
+    options: ["É mais quente", "Possui menor densidade que a água líquida", "Não possui massa", "Água líquida não tem volume"],
+    answer: 1,
+    explanation: "O gelo possui menor densidade que a água líquida."
+  },
+  {
+    level: "Difícil",
+    question: "Por que aumentar a temperatura pode acelerar uma reação química?",
+    options: ["Elimina moléculas", "Aumenta colisões efetivas entre partículas", "Impede colisões", "Transforma reagentes em gases"],
+    answer: 1,
+    explanation: "Partículas com maior energia têm mais chances de realizar colisões efetivas."
+  },
+  {
+    level: "Difícil",
+    question: "Por que reciclar alumínio economiza energia?",
+    options: ["O alumínio reciclado não tem átomos", "Evita parte da produção a partir do minério", "Deixa de ser metal", "Não utiliza energia"],
+    answer: 1,
+    explanation: "Reciclar reduz a necessidade de extrair e processar minério."
+  },
+  {
+    level: "Difícil",
+    question: "Uma lâmpada transforma energia elétrica principalmente em:",
+    options: ["Energia química e nuclear", "Energia luminosa e térmica", "Energia mecânica", "Energia sonora"],
+    answer: 1,
+    explanation: "A lâmpada produz luz e também calor."
+  }
+];
+
+// ==========================================
+// ELEMENTOS HTML
+// ==========================================
+
 const homeScreen = document.getElementById("homeScreen");
 const lobbyScreen = document.getElementById("lobbyScreen");
 const gameScreen = document.getElementById("gameScreen");
@@ -29,6 +256,7 @@ const endScreen = document.getElementById("endScreen");
 
 const playerNameInput = document.getElementById("playerName");
 const roomCodeInput = document.getElementById("roomCodeInput");
+
 const createRoomBtn = document.getElementById("createRoomBtn");
 const joinRoomBtn = document.getElementById("joinRoomBtn");
 
@@ -54,922 +282,573 @@ const answerFeedback = document.getElementById("answerFeedback");
 const winnerMessage = document.getElementById("winnerMessage");
 const finalMessage = document.getElementById("finalMessage");
 
-// 3. VARIÁVEIS
-let currentUser = null;
-let currentRoomId = null;
-let roomUnsubscribe = null;
-let roomData = null;
+// ==========================================
+// AUTENTICAÇÃO
+// ==========================================
 
-let currentQuestion = null;
-let answeredQuestionIds = [];
-
-let canAttack = false;
-let busy = false;
-let questionPending = false;
-
-// 4. BANCO DE QUESTÕES
-const questions = [
-  {
-    id: 1,
-    level: "FÁCIL",
-    question: "Qual nutriente é a principal fonte de energia rápida para o organismo?",
-    options: ["Vitaminas", "Carboidratos", "Água", "Sais minerais"],
-    answer: 1,
-    explanation: "Os carboidratos são uma importante fonte de energia para o organismo."
-  },
-  {
-    id: 2,
-    level: "FÁCIL",
-    question: "Qual nutriente fornece aproximadamente 9 kcal por grama?",
-    options: ["Carboidrato", "Proteína", "Lipídio", "Vitamina C"],
-    answer: 2,
-    explanation: "Os lipídios fornecem aproximadamente 9 kcal por grama."
-  },
-  {
-    id: 3,
-    level: "FÁCIL",
-    question: "Qual nutriente é importante para a construção e reparação dos tecidos?",
-    options: ["Proteínas", "Água", "Carboidratos", "Sais minerais"],
-    answer: 0,
-    explanation: "As proteínas participam da construção e reparação dos tecidos."
-  },
-  {
-    id: 4,
-    level: "FÁCIL",
-    question: "Qual destas substâncias não fornece energia diretamente?",
-    options: ["Carboidratos", "Lipídios", "Proteínas", "Vitaminas"],
-    answer: 3,
-    explanation: "Vitaminas não fornecem energia, mas são essenciais para o metabolismo."
-  },
-  {
-    id: 5,
-    level: "FÁCIL",
-    question: "A água é importante para o organismo porque:",
-    options: [
-      "Fornece grande quantidade de calorias",
-      "Participa de reações e transportes no organismo",
-      "Substitui todos os nutrientes",
-      "É fonte de gordura"
-    ],
-    answer: 1,
-    explanation: "A água participa do transporte de substâncias e de diversas reações."
-  },
-  {
-    id: 6,
-    level: "FÁCIL",
-    question: "Qual destes alimentos é uma fonte importante de proteínas?",
-    options: ["Refrigerante", "Açúcar", "Ovo", "Óleo"],
-    answer: 2,
-    explanation: "O ovo contém proteínas."
-  },
-  {
-    id: 7,
-    level: "FÁCIL",
-    question: "O consumo de fibras alimentares contribui principalmente para:",
-    options: [
-      "A saúde intestinal",
-      "Aumentar o açúcar dos alimentos",
-      "Eliminar toda a água do organismo",
-      "Substituir proteínas"
-    ],
-    answer: 0,
-    explanation: "As fibras ajudam no funcionamento intestinal."
-  },
-  {
-    id: 8,
-    level: "FÁCIL",
-    question: "Qual destes alimentos costuma apresentar maior quantidade de açúcar?",
-    options: ["Água", "Refrigerante comum", "Alface", "Ovo cozido"],
-    answer: 1,
-    explanation: "Refrigerantes convencionais geralmente apresentam grande quantidade de açúcar."
-  },
-  {
-    id: 9,
-    level: "FÁCIL",
-    question: "A energia dos alimentos geralmente é expressa em:",
-    options: ["Metros", "Litros", "Quilocalorias", "Graus Celsius"],
-    answer: 2,
-    explanation: "O valor energético pode ser expresso em quilocalorias (kcal)."
-  },
-  {
-    id: 10,
-    level: "FÁCIL",
-    question: "Qual grupo de alimentos é fonte de vitaminas e minerais?",
-    options: ["Frutas e verduras", "Óleos", "Balas", "Refrigerantes"],
-    answer: 0,
-    explanation: "Frutas e verduras fornecem vitaminas e minerais importantes."
-  },
-
-  {
-    id: 11,
-    level: "MÉDIO",
-    question: "Um alimento contém 10 g de carboidratos. Considerando 4 kcal/g, qual a energia fornecida?",
-    options: ["10 kcal", "20 kcal", "40 kcal", "90 kcal"],
-    answer: 2,
-    explanation: "10 × 4 = 40 kcal."
-  },
-  {
-    id: 12,
-    level: "MÉDIO",
-    question: "Um alimento possui 20 g de carboidratos, 5 g de proteínas e 8 g de lipídios. Qual seu valor energético?",
-    options: ["132 kcal", "152 kcal", "172 kcal", "192 kcal"],
-    answer: 2,
-    explanation: "20×4 + 5×4 + 8×9 = 172 kcal."
-  },
-  {
-    id: 13,
-    level: "MÉDIO",
-    question: "Por que devemos observar a lista de ingredientes de um produto?",
-    options: [
-      "Ela mostra os ingredientes utilizados, geralmente em ordem decrescente de quantidade",
-      "Ela apresenta somente as calorias",
-      "Ela informa apenas o preço",
-      "Ela é apenas decorativa"
-    ],
-    answer: 0,
-    explanation: "A lista de ingredientes ajuda a conhecer a composição do produto."
-  },
-  {
-    id: 14,
-    level: "MÉDIO",
-    question: "O que caracteriza um alimento ultraprocessado?",
-    options: [
-      "Ser necessariamente orgânico",
-      "Possuir somente ingredientes naturais",
-      "Ser produzido exclusivamente em casa",
-      "Ser uma formulação industrial com diversos ingredientes e aditivos"
-    ],
-    answer: 3,
-    explanation: "Ultraprocessados são formulações industriais, frequentemente com vários ingredientes e aditivos."
-  },
-  {
-    id: 15,
-    level: "MÉDIO",
-    question: "O consumo excessivo de açúcar pode contribuir para:",
-    options: [
-      "Melhorar sempre a saúde",
-      "Problemas de saúde quando associado a hábitos inadequados",
-      "Eliminar a necessidade de água",
-      "Substituir todas as vitaminas"
-    ],
-    answer: 1,
-    explanation: "O consumo excessivo de açúcar pode contribuir para problemas de saúde."
-  },
-  {
-    id: 16,
-    level: "MÉDIO",
-    question: "Qual alternativa representa uma refeição mais equilibrada?",
-    options: [
-      "Refrigerante e salgadinho",
-      "Somente doces",
-      "Arroz, feijão, legumes e uma fonte de proteína",
-      "Apenas café"
-    ],
-    answer: 2,
-    explanation: "A combinação de diferentes grupos alimentares contribui para uma alimentação variada."
-  },
-  {
-    id: 17,
-    level: "MÉDIO",
-    question: "A anemia por deficiência de ferro está relacionada principalmente:",
-    options: [
-      "À falta de ferro para a produção adequada de hemoglobina",
-      "Ao excesso de água",
-      "Ao consumo de fibras",
-      "À falta de carboidratos"
-    ],
-    answer: 0,
-    explanation: "O ferro é essencial para a formação da hemoglobina."
-  },
-  {
-    id: 18,
-    level: "MÉDIO",
-    question: "O que significa balanço energético?",
-    options: [
-      "A quantidade de água consumida",
-      "A relação entre energia consumida e energia gasta",
-      "A quantidade de vitaminas",
-      "O peso de todos os alimentos"
-    ],
-    answer: 1,
-    explanation: "O balanço energético relaciona a energia ingerida e a energia utilizada pelo organismo."
-  },
-  {
-    id: 19,
-    level: "MÉDIO",
-    question: "Qual atitude ajuda a reduzir o desperdício de alimentos?",
-    options: [
-      "Servir mais do que será consumido",
-      "Descartar alimentos sem verificar",
-      "Planejar refeições e aproveitar alimentos adequadamente",
-      "Comprar sem planejamento"
-    ],
-    answer: 2,
-    explanation: "Planejamento e aproveitamento adequado ajudam a reduzir desperdícios."
-  },
-  {
-    id: 20,
-    level: "MÉDIO",
-    question: "O sal de cozinha contém principalmente:",
-    options: ["Cloreto de sódio", "Glicose", "Etanol", "Ácido acético"],
-    answer: 0,
-    explanation: "O sal de cozinha é constituído principalmente por cloreto de sódio (NaCl)."
-  },
-
-  {
-    id: 21,
-    level: "DIFÍCIL",
-    question: "Um alimento possui 30 g de carboidratos, 6 g de proteínas e 10 g de lipídios. Qual o valor energético aproximado?",
-    options: ["184 kcal", "214 kcal", "234 kcal", "294 kcal"],
-    answer: 2,
-    explanation: "30×4 + 6×4 + 10×9 = 234 kcal."
-  },
-  {
-    id: 22,
-    level: "DIFÍCIL",
-    question: "Por que dois produtos de mesma massa podem apresentar valores calóricos diferentes?",
-    options: [
-      "Porque possuem proporções diferentes de nutrientes energéticos",
-      "Porque todos possuem calorias iguais",
-      "Porque a embalagem altera diretamente a energia",
-      "Porque a massa não tem relação com alimentos"
-    ],
-    answer: 0,
-    explanation: "A composição em carboidratos, proteínas e lipídios influencia o valor energético."
-  },
-  {
-    id: 23,
-    level: "DIFÍCIL",
-    question: "O excesso de sódio na alimentação está associado principalmente a:",
-    options: [
-      "Aumento da vitamina C",
-      "Redução de todas as calorias",
-      "Maior risco de problemas relacionados à pressão arterial",
-      "Produção de proteínas"
-    ],
-    answer: 2,
-    explanation: "O consumo excessivo de sódio pode contribuir para a hipertensão."
-  },
-  {
-    id: 24,
-    level: "DIFÍCIL",
-    question: "Qual situação representa uma escolha mais consciente ao comparar dois alimentos?",
-    options: [
-      "Escolher sempre a embalagem mais bonita",
-      "Comparar ingredientes, porção, nutrientes e contexto de consumo",
-      "Escolher somente pelo preço",
-      "Ignorar o rótulo"
-    ],
-    answer: 1,
-    explanation: "A análise de rótulos e da composição permite escolhas mais informadas."
-  },
-  {
-    id: 25,
-    level: "DIFÍCIL",
-    question: "A digestão dos alimentos permite:",
-    options: [
-      "Que nutrientes sejam quebrados e processados para absorção",
-      "Que o alimento permaneça sempre igual",
-      "Que toda a energia seja eliminada",
-      "Que a água deixe de ser necessária"
-    ],
-    answer: 0,
-    explanation: "A digestão envolve processos que tornam nutrientes disponíveis para absorção."
-  },
-  {
-    id: 26,
-    level: "DIFÍCIL",
-    question: "Qual alternativa apresenta uma consequência possível do desperdício de alimentos?",
-    options: [
-      "Redução automática da poluição",
-      "Diminuição dos recursos usados na produção",
-      "Desperdício de água, energia, solo e trabalho envolvidos na produção",
-      "Aumento da disponibilidade de alimentos"
-    ],
-    answer: 2,
-    explanation: "O desperdício também significa desperdiçar recursos usados para produzir alimentos."
-  },
-  {
-    id: 27,
-    level: "DIFÍCIL",
-    question: "A lactose é:",
-    options: ["Um lipídio", "Um açúcar presente no leite", "Uma vitamina", "Um mineral"],
-    answer: 1,
-    explanation: "Lactose é um carboidrato, especificamente um dissacarídeo presente no leite."
-  },
-  {
-    id: 28,
-    level: "DIFÍCIL",
-    question: "Por que a tabela nutricional deve ser analisada considerando a porção indicada?",
-    options: [
-      "Porque os valores se referem à quantidade indicada e podem variar conforme o consumo",
-      "Porque a porção não tem importância",
-      "Porque todas as embalagens têm a mesma quantidade",
-      "Porque os valores são sempre para o pacote inteiro"
-    ],
-    answer: 0,
-    explanation: "A comparação exige observar a porção de referência e quanto será consumido."
-  },
-  {
-    id: 29,
-    level: "DIFÍCIL",
-    question: "Qual processo libera energia a partir de moléculas orgânicas no organismo?",
-    options: ["Somente congelamento", "Respiração celular", "Filtração", "Evaporação"],
-    answer: 1,
-    explanation: "A respiração celular libera energia a partir de moléculas orgânicas."
-  },
-  {
-    id: 30,
-    level: "DIFÍCIL",
-    question: "Uma alimentação saudável deve:",
-    options: [
-      "Excluir obrigatoriamente todos os carboidratos",
-      "Ser baseada apenas em um alimento",
-      "Considerar variedade, equilíbrio e necessidades individuais",
-      "Ser igual para todas as pessoas"
-    ],
-    answer: 2,
-    explanation: "Alimentação adequada depende de variedade, equilíbrio e necessidades individuais."
-  }
-];
-
-// 5. FUNÇÕES DE APOIO
-function showScreen(screen) {
-  [homeScreen, lobbyScreen, gameScreen, endScreen].forEach(s => {
-    s.classList.add("hidden");
+auth.signInAnonymously()
+  .then(result => {
+    currentUser = result.user;
+    homeMessage.textContent = "Conectado! Você pode criar ou entrar em uma partida.";
+  })
+  .catch(error => {
+    console.error("Erro Firebase:", error);
+    homeMessage.textContent = "Erro de conexão Firebase: " + error.message;
   });
+
+// ==========================================
+// FUNÇÕES AUXILIARES
+// ==========================================
+
+function showScreen(screen) {
+  homeScreen.classList.add("hidden");
+  lobbyScreen.classList.add("hidden");
+  gameScreen.classList.add("hidden");
+  endScreen.classList.add("hidden");
+
   screen.classList.remove("hidden");
 }
 
-function createCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let i = 0; i < 5; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
+function getPlayerName() {
+  const name = playerNameInput.value.trim();
+  return name || "Jogador";
 }
 
-function makeBoard() {
-  return Array(64).fill(0);
+function generateRoomCode() {
+  return Math.random().toString(36).substring(2, 7).toUpperCase();
 }
 
-function placeShips() {
-  const board = makeBoard();
-  const ships = [3, 2, 2];
+function createShips() {
+  const ships = [];
+  const lengths = [3, 2, 2];
 
-  ships.forEach(size => {
+  lengths.forEach(length => {
     let placed = false;
 
     while (!placed) {
       const horizontal = Math.random() < 0.5;
       const row = Math.floor(Math.random() * 8);
       const col = Math.floor(Math.random() * 8);
-      const positions = [];
 
-      for (let i = 0; i < size; i++) {
+      const cells = [];
+
+      for (let i = 0; i < length; i++) {
         const r = horizontal ? row : row + i;
         const c = horizontal ? col + i : col;
 
-        if (r >= 8 || c >= 8) {
-          positions.length = 0;
-          break;
-        }
-
-        positions.push(r * 8 + c);
+        if (r >= 8 || c >= 8) break;
+        cells.push(r * 8 + c);
       }
 
-      if (positions.length && positions.every(p => board[p] === 0)) {
-        positions.forEach(p => board[p] = 1);
+      if (cells.length !== length) continue;
+
+      const overlap = cells.some(cell =>
+        ships.flat().includes(cell)
+      );
+
+      if (!overlap) {
+        ships.push(cells);
         placed = true;
       }
     }
   });
 
-  return board;
+  return ships.flat();
 }
 
-function getPlayerIndex(data) {
-  return data.players.findIndex(p => p.uid === currentUser.uid);
+function createPlayer(name) {
+  return {
+    uid: currentUser.uid,
+    name: name,
+    ships: createShips(),
+    hits: [],
+    misses: []
+  };
 }
 
-function getOpponentIndex(data) {
-  return data.players.findIndex(p => p.uid !== currentUser.uid);
+function getOpponentIndex() {
+  if (!currentRoom) return -1;
+  return currentRoom.players.findIndex(p => p.uid !== currentUser.uid);
 }
 
-function getMe(data) {
-  return data.players[getPlayerIndex(data)];
-}
-
-function getOpponent(data) {
-  return data.players[getOpponentIndex(data)];
-}
-
-function getRoomRef() {
-  return db.collection("rooms").doc(currentRoomId);
+function getMyIndex() {
+  if (!currentRoom) return -1;
+  return currentRoom.players.findIndex(p => p.uid === currentUser.uid);
 }
 
 function isMyTurn() {
-  return roomData && currentUser &&
-    roomData.currentTurn === currentUser.uid;
+  return currentRoom &&
+    currentRoom.turn === currentUser.uid &&
+    currentRoom.status === "playing";
+}
+
+function showMessage(text) {
+  gameMessage.textContent = text;
 }
 
 function randomQuestion() {
-  const remaining = questions.filter(
-    q => !answeredQuestionIds.includes(q.id)
+  if (usedQuestions.length >= questions.length) {
+    usedQuestions = [];
+  }
+
+  let available = questions.filter((q, i) =>
+    !usedQuestions.includes(i)
   );
 
-  if (remaining.length === 0) {
-    answeredQuestionIds = [];
-    return questions[Math.floor(Math.random() * questions.length)];
-  }
+  const index = Math.floor(Math.random() * available.length);
+  const question = available[index];
 
-  const q = remaining[Math.floor(Math.random() * remaining.length)];
-  answeredQuestionIds.push(q.id);
-  return q;
+  const originalIndex = questions.indexOf(question);
+  usedQuestions.push(originalIndex);
+
+  return question;
 }
 
-function escapeHTML(text) {
-  return String(text).replace(/[&<>"']/g, character => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  }[character]));
-}
+// ==========================================
+// CRIAR PARTIDA
+// ==========================================
 
-// 6. AUTENTICAÇÃO
-auth.signInAnonymously()
-  .then(result => {
-    currentUser = result.user;
-    console.log("Firebase conectado.");
-  })
-  .catch(error => {
-    console.error("Erro Firebase:", error);
-    homeMessage.textContent =
-      "Erro ao conectar ao Firebase. Confira sua API Key e autenticação.";
-  });
-
-// 7. CRIAR SALA
 createRoomBtn.addEventListener("click", async () => {
-  const name = playerNameInput.value.trim();
-
-  if (!name) {
-    homeMessage.textContent = "Digite seu nome antes de criar a partida.";
-    return;
-  }
-
   if (!currentUser) {
-    homeMessage.textContent = "Conectando ao Firebase. Aguarde...";
+    homeMessage.textContent = "Aguarde a conexão com Firebase...";
     return;
   }
 
+  busy = true;
   createRoomBtn.disabled = true;
 
   try {
-    const code = createCode();
-    currentRoomId = code;
+    const code = generateRoomCode();
 
-    const player = {
-      uid: currentUser.uid,
-      name,
-      board: placeShips(),
-      hits: [],
-      misses: []
-    };
+    const player = createPlayer(getPlayerName());
 
-    await db.collection("rooms").doc(code).set({
-      code,
-      status: "waiting",
+    roomRef = db.collection("rooms").doc(code);
+
+    await roomRef.set({
+      code: code,
       players: [player],
-      currentTurn: currentUser.uid,
-      winner: null,
+      turn: currentUser.uid,
+      status: "waiting",
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    enterLobby(code);
+    currentRoom = null;
+
+    roomCodeDisplay.textContent = code;
+    showScreen(lobbyScreen);
+    listenRoom(code);
+
   } catch (error) {
     console.error(error);
-    homeMessage.textContent = "Não foi possível criar a partida.";
+    homeMessage.textContent = "Erro ao criar partida: " + error.message;
   } finally {
+    busy = false;
     createRoomBtn.disabled = false;
   }
 });
 
-// 8. ENTRAR NA SALA
-joinRoomBtn.addEventListener("click", async () => {
-  const name = playerNameInput.value.trim();
-  const code = roomCodeInput.value.trim().toUpperCase();
+// ==========================================
+// ENTRAR EM PARTIDA
+// ==========================================
 
-  if (!name) {
-    homeMessage.textContent = "Digite seu nome.";
+joinRoomBtn.addEventListener("click", async () => {
+  if (!currentUser) {
+    homeMessage.textContent = "Aguarde a conexão com Firebase...";
     return;
   }
+
+  const code = roomCodeInput.value.trim().toUpperCase();
 
   if (!code) {
     homeMessage.textContent = "Digite o código da sala.";
     return;
   }
 
-  if (!currentUser) {
-    homeMessage.textContent = "Conectando ao Firebase. Aguarde...";
-    return;
-  }
-
+  busy = true;
   joinRoomBtn.disabled = true;
 
   try {
-    const ref = db.collection("rooms").doc(code);
-    const snap = await ref.get();
+    roomRef = db.collection("rooms").doc(code);
+    const snapshot = await roomRef.get();
 
-    if (!snap.exists) {
+    if (!snapshot.exists) {
       homeMessage.textContent = "Sala não encontrada.";
       return;
     }
 
-    const data = snap.data();
+    const data = snapshot.data();
 
-    if (data.status !== "waiting") {
-      homeMessage.textContent = "Esta partida já começou ou terminou.";
+    if (data.players.some(p => p.uid === currentUser.uid)) {
+      showScreen(lobbyScreen);
+      roomCodeDisplay.textContent = code;
+      listenRoom(code);
       return;
     }
 
     if (data.players.length >= 2) {
-      homeMessage.textContent = "Esta sala já está cheia.";
+      homeMessage.textContent = "Essa sala já está cheia.";
       return;
     }
 
-    if (data.players.some(p => p.uid === currentUser.uid)) {
-      enterLobby(code);
+    if (data.status !== "waiting") {
+      homeMessage.textContent = "Essa partida já começou.";
       return;
     }
 
-    const player = {
-      uid: currentUser.uid,
-      name,
-      board: placeShips(),
-      hits: [],
-      misses: []
-    };
+    const player = createPlayer(getPlayerName());
 
-    await ref.update({
+    await roomRef.update({
       players: firebase.firestore.FieldValue.arrayUnion(player),
-      status: "playing",
-      currentTurn: data.players[0].uid
+      status: "playing"
     });
 
-    enterLobby(code);
+    roomCodeDisplay.textContent = code;
+    showScreen(lobbyScreen);
+    listenRoom(code);
+
   } catch (error) {
     console.error(error);
-    homeMessage.textContent = "Erro ao entrar na sala.";
+    homeMessage.textContent = "Erro ao entrar: " + error.message;
   } finally {
+    busy = false;
     joinRoomBtn.disabled = false;
   }
 });
 
-// 9. SALA DE ESPERA / MONITORAMENTO
-function enterLobby(code) {
-  currentRoomId = code;
-  roomCodeDisplay.textContent = code;
-  showScreen(lobbyScreen);
+// ==========================================
+// COPIAR CÓDIGO
+// ==========================================
 
-  if (roomUnsubscribe) {
-    roomUnsubscribe();
-  }
-
-  roomUnsubscribe = getRoomRef().onSnapshot(snapshot => {
-    if (!snapshot.exists) return;
-
-    roomData = snapshot.data();
-
-    updateLobby();
-
-    if (roomData.status === "playing") {
-      showScreen(gameScreen);
-      renderGame();
-    }
-
-    if (roomData.status === "finished") {
-      showEndGame();
-    }
-  }, error => {
-    console.error(error);
-    lobbyStatus.textContent = "Erro ao acompanhar a partida.";
-  });
-}
-
-function updateLobby() {
-  if (!roomData) return;
-
-  roomCodeDisplay.textContent = roomData.code;
-
-  playersList.innerHTML = roomData.players
-    .map(p => `<p>👤 ${escapeHTML(p.name)}</p>`)
-    .join("");
-
-  lobbyStatus.textContent = roomData.players.length < 2
-    ? "Aguardando o segundo jogador..."
-    : "Os jogadores estão prontos!";
-}
-
-// 10. COPIAR CÓDIGO DA SALA
 copyCodeBtn.addEventListener("click", async () => {
-  if (!currentRoomId) return;
-
   try {
-    await navigator.clipboard.writeText(currentRoomId);
-    copyCodeBtn.textContent = "✅ Código copiado!";
-
-    setTimeout(() => {
-      copyCodeBtn.textContent = "📋 Copiar código";
-    }, 1500);
-  } catch (error) {
-    alert("Código da sala: " + currentRoomId);
+    await navigator.clipboard.writeText(roomCodeDisplay.textContent);
+    copyCodeBtn.textContent = "Copiado!";
+    setTimeout(() => copyCodeBtn.textContent = "📋 Copiar", 1500);
+  } catch {
+    alert("Código da sala: " + roomCodeDisplay.textContent);
   }
 });
 
-// 11. DESENHAR TABULEIROS
-function renderGame() {
-  if (!roomData || roomData.players.length !== 2 || !currentUser) return;
+// ==========================================
+// OUVIR SALA
+// ==========================================
 
-  const me = getMe(roomData);
-  const opponent = getOpponent(roomData);
+function listenRoom(code) {
+  if (unsubscribeRoom) unsubscribeRoom();
 
-  if (!me || !opponent) return;
+  roomRef = db.collection("rooms").doc(code);
 
-  myBoard.innerHTML = "";
-  enemyBoard.innerHTML = "";
+  unsubscribeRoom = roomRef.onSnapshot(snapshot => {
+    if (!snapshot.exists) return;
+
+    currentRoom = snapshot.data();
+
+    renderRoom();
+  }, error => {
+    console.error("Erro ao acompanhar sala:", error);
+    lobbyStatus.textContent = "Erro ao conectar à sala.";
+  });
+}
+
+// ==========================================
+// RENDERIZAR
+// ==========================================
+
+function renderRoom() {
+  if (!currentRoom) return;
+
+  if (currentRoom.status === "waiting") {
+    showScreen(lobbyScreen);
+    lobbyStatus.textContent = "Aguardando outro jogador...";
+    renderPlayers();
+    return;
+  }
+
+  if (currentRoom.status === "playing") {
+    showScreen(gameScreen);
+    renderGame();
+    return;
+  }
+
+  if (currentRoom.status === "finished") {
+    showScreen(endScreen);
+    renderEnd();
+  }
+}
+
+function renderPlayers() {
+  playersList.innerHTML = "";
+
+  if (!currentRoom) return;
+
+  currentRoom.players.forEach(player => {
+    const div = document.createElement("div");
+    div.className = "player-item";
+    div.textContent = "👤 " + player.name;
+    playersList.appendChild(div);
+  });
+
+  if (currentRoom.players.length === 2) {
+    lobbyStatus.textContent = "Dois jogadores conectados! Iniciando...";
+  }
+}
+
+// ==========================================
+// TABULEIROS
+// ==========================================
+
+function renderBoard(element, cells, isEnemy) {
+  element.innerHTML = "";
 
   for (let i = 0; i < 64; i++) {
-    // TABULEIRO DO JOGADOR
-    const myCell = document.createElement("div");
-    myCell.className = "cell";
+    const cell = document.createElement("button");
+    cell.className = "cell";
 
-    if (me.board[i] === 1) {
-      myCell.classList.add("ship-cell");
-      myCell.textContent = "🚢";
+    if (cells.ships && cells.ships.includes(i) && !isEnemy) {
+      cell.classList.add("ship-cell");
+      cell.textContent = "🚢";
     }
 
-    if (me.hits.includes(i)) {
-      myCell.classList.remove("ship-cell");
-      myCell.classList.add("hit-cell");
-      myCell.textContent = "💥";
+    if (cells.hits && cells.hits.includes(i)) {
+      cell.classList.add("hit-cell");
+      cell.textContent = "💥";
     }
 
-    if (me.misses.includes(i)) {
-      myCell.classList.add("miss-cell");
-      myCell.textContent = "•";
+    if (cells.misses && cells.misses.includes(i)) {
+      cell.classList.add("miss-cell");
+      cell.textContent = "⭕";
     }
 
-    myBoard.appendChild(myCell);
+    if (isEnemy) {
+      cell.classList.add("enemy-cell");
 
-    // TABULEIRO DO ADVERSÁRIO
-    const enemyCell = document.createElement("div");
-    enemyCell.className = "cell enemy-cell";
+      if (cells.hits && cells.hits.includes(i)) {
+        cell.textContent = "💥";
+        cell.classList.add("hit-cell");
+      } else if (cells.misses && cells.misses.includes(i)) {
+        cell.textContent = "⭕";
+        cell.classList.add("miss-cell");
+      } else {
+        cell.textContent = "❓";
+      }
 
-    if (opponent.hits.includes(i)) {
-      enemyCell.classList.add("hit-cell");
-      enemyCell.textContent = "💥";
+      cell.disabled = !isMyTurn() || !canAttack ||
+        (cells.hits && cells.hits.includes(i)) ||
+        (cells.misses && cells.misses.includes(i));
+
+      cell.addEventListener("click", () => attack(i));
     }
 
-    if (opponent.misses.includes(i)) {
-      enemyCell.classList.add("miss-cell");
-      enemyCell.textContent = "•";
-    }
-
-    enemyCell.addEventListener("click", () => selectTarget(i));
-
-    if (
-      !isMyTurn() ||
-      !canAttack ||
-      busy ||
-      opponent.hits.includes(i) ||
-      opponent.misses.includes(i)
-    ) {
-      enemyCell.style.cursor = "default";
-    }
-
-    enemyBoard.appendChild(enemyCell);
-  }
-
-  updateTurnInfo();
-
-  // Exibe uma pergunta automaticamente quando for a vez do jogador
-  if (
-    isMyTurn() &&
-    questionArea.classList.contains("hidden") &&
-    !busy &&
-    !questionPending
-  ) {
-    startQuestion();
+    element.appendChild(cell);
   }
 }
 
-function updateTurnInfo() {
-  if (!roomData) return;
+function renderGame() {
+  const myIndex = getMyIndex();
+  const opponentIndex = getOpponentIndex();
+
+  if (myIndex < 0 || opponentIndex < 0) return;
+
+  const me = currentRoom.players[myIndex];
+  const opponent = currentRoom.players[opponentIndex];
+
+  renderBoard(myBoard, me, false);
+  renderBoard(enemyBoard, opponent, true);
 
   if (isMyTurn()) {
-    turnMessage.textContent = "🟢 Sua vez!";
-    gameStatus.textContent = "Responda corretamente para liberar seu ataque.";
+    turnMessage.textContent = "🎯 É sua vez! Responda à pergunta para atacar.";
+    gameStatus.textContent = "Sua vez";
+    gameStatus.style.background = "#d9f7e5";
+    gameStatus.style.color = "#16733c";
+
+    if (!canAttack && !questionPending) {
+      startQuestion();
+    }
   } else {
-    turnMessage.textContent = "🟡 Vez do adversário";
-    gameStatus.textContent = "Aguarde seu adversário responder.";
+    turnMessage.textContent = "⏳ Aguardando jogada do adversário...";
+    gameStatus.textContent = "Aguardando";
+    gameStatus.style.background = "#e8f1f8";
+    gameStatus.style.color = "#45708c";
+    canAttack = false;
+    questionPending = false;
+    questionArea.classList.add("hidden");
   }
 }
 
-// 12. PERGUNTA
+// ==========================================
+// PERGUNTAS
+// ==========================================
+
 function startQuestion() {
-  if (!isMyTurn() || busy || questionPending) return;
+  if (!isMyTurn() || questionPending || canAttack) return;
 
   questionPending = true;
-  currentQuestion = randomQuestion();
-  canAttack = false;
-
-  questionArea.classList.remove("hidden");
-  questionLevel.textContent = currentQuestion.level;
-  questionText.textContent = currentQuestion.question;
-
-  answerOptions.innerHTML = "";
   answerFeedback.textContent = "";
-  gameMessage.textContent = "";
 
-  currentQuestion.options.forEach((option, index) => {
+  const q = randomQuestion();
+
+  questionLevel.textContent = q.level;
+  questionText.textContent = q.question;
+  answerOptions.innerHTML = "";
+
+  q.options.forEach((option, index) => {
     const button = document.createElement("button");
-    button.textContent = `${String.fromCharCode(65 + index)}) ${option}`;
+    button.className = "answer-btn";
+    button.textContent = String.fromCharCode(65 + index) + ") " + option;
 
-    button.addEventListener("click", () => answerQuestion(index));
+    button.addEventListener("click", () => answerQuestion(index, q, button));
 
     answerOptions.appendChild(button);
   });
+
+  questionArea.classList.remove("hidden");
 }
 
-// 13. RESPONDER
-async function answerQuestion(index) {
-  if (!currentQuestion || busy || !isMyTurn()) return;
+function answerQuestion(index, q, selectedButton) {
+  if (!questionPending || !isMyTurn()) return;
 
-  busy = true;
+  const buttons = answerOptions.querySelectorAll("button");
+  buttons.forEach(button => button.disabled = true);
 
-  Array.from(answerOptions.children).forEach(button => {
-    button.disabled = true;
-  });
-
-  const correct = index === currentQuestion.answer;
-
-  if (correct) {
-    answerFeedback.textContent =
-      "✅ Resposta correta! Você liberou seu ataque!";
-    answerFeedback.style.color = "#228a55";
-
+  if (index === q.answer) {
+    selectedButton.classList.add("correct");
+    answerFeedback.textContent = "✅ Resposta correta! Escolha uma posição no tabuleiro adversário.";
     canAttack = true;
-    busy = false;
-
-    gameMessage.textContent =
-      "🎯 Clique em uma posição do tabuleiro adversário.";
+    questionPending = false;
+    renderGame();
   } else {
-    answerFeedback.textContent =
-      "❌ Resposta incorreta! " + currentQuestion.explanation;
-    answerFeedback.style.color = "#d05243";
+    selectedButton.classList.add("wrong");
+    answerFeedback.textContent = "❌ Resposta incorreta! " + q.explanation + " A vez será passada.";
 
+    questionPending = false;
     canAttack = false;
-    gameMessage.textContent = "Sua vez será passada ao adversário.";
 
-    setTimeout(async () => {
-      await passTurn();
-      questionArea.classList.add("hidden");
-      questionPending = false;
-      busy = false;
-    }, 2200);
+    setTimeout(() => passTurn(), 2200);
   }
 }
 
-// 14. ATAQUE
-async function selectTarget(index) {
-  if (!canAttack || busy || !isMyTurn()) return;
+// ==========================================
+// ATAQUE
+// ==========================================
 
-  const opponent = getOpponent(roomData);
+async function attack(index) {
+  if (busy || !canAttack || !isMyTurn()) return;
 
-  if (
-    opponent.hits.includes(index) ||
-    opponent.misses.includes(index)
-  ) {
-    gameMessage.textContent =
-      "Você já atacou essa posição. Escolha outra.";
+  const opponentIndex = getOpponentIndex();
+  const myIndex = getMyIndex();
+
+  if (opponentIndex < 0 || myIndex < 0) return;
+
+  const opponent = currentRoom.players[opponentIndex];
+
+  if (opponent.hits.includes(index) || opponent.misses.includes(index)) {
     return;
   }
 
   busy = true;
   canAttack = false;
+  questionPending = false;
+  questionArea.classList.add("hidden");
 
   try {
     await db.runTransaction(async transaction => {
-      const ref = getRoomRef();
-      const snap = await transaction.get(ref);
+      const snapshot = await transaction.get(roomRef);
+      const data = snapshot.data();
 
-      if (!snap.exists) {
-        throw new Error("Partida não encontrada.");
-      }
-
-      const data = snap.data();
-
-      if (data.currentTurn !== currentUser.uid) {
+      if (data.status !== "playing" || data.turn !== currentUser.uid) {
         throw new Error("Não é sua vez.");
       }
 
-      const meIndex = data.players.findIndex(
-        p => p.uid === currentUser.uid
-      );
+      const players = data.players;
+      const enemyIndex = players.findIndex(p => p.uid !== currentUser.uid);
 
-      const enemyIndex = data.players.findIndex(
-        p => p.uid !== currentUser.uid
-      );
+      if (enemyIndex < 0) throw new Error("Adversário não encontrado.");
 
-      const updatedPlayers = data.players.map(p => ({
-        ...p,
-        hits: [...(p.hits || [])],
-        misses: [...(p.misses || [])]
-      }));
+      const enemy = players[enemyIndex];
 
-      const enemy = updatedPlayers[enemyIndex];
-      const hit = enemy.board[index] === 1;
+      if (enemy.hits.includes(index) || enemy.misses.includes(index)) {
+        throw new Error("Esta posição já foi atacada.");
+      }
 
-      if (hit) {
+      const isHit = enemy.ships.includes(index);
+
+      if (isHit) {
         enemy.hits.push(index);
       } else {
         enemy.misses.push(index);
       }
 
-      const shipPositions = enemy.board
-        .map((value, i) => value === 1 ? i : -1)
-        .filter(i => i !== -1);
-
-      const allShipsHit = shipPositions.every(
-        position => enemy.hits.includes(position)
+      const allHit = enemy.ships.every(shipCell =>
+        enemy.hits.includes(shipCell)
       );
 
-      transaction.update(ref, {
-        players: updatedPlayers,
-        currentTurn: allShipsHit
-          ? currentUser.uid
-          : data.players[enemyIndex].uid,
-        status: allShipsHit ? "finished" : "playing",
-        winner: allShipsHit ? currentUser.uid : null
-      });
+      if (allHit) {
+        transaction.update(roomRef, {
+          players: players,
+          status: "finished",
+          winner: currentUser.uid
+        });
+      } else {
+        const nextPlayer = players.find(p => p.uid !== currentUser.uid);
+
+        transaction.update(roomRef, {
+          players: players,
+          turn: nextPlayer.uid
+        });
+      }
     });
 
-    questionArea.classList.add("hidden");
-    questionPending = false;
-    gameMessage.textContent = "⚓ Ataque realizado!";
+    showMessage("Ataque realizado!");
+
   } catch (error) {
     console.error(error);
-    gameMessage.textContent = error.message || "Erro ao realizar ataque.";
+    showMessage(error.message);
   } finally {
     busy = false;
   }
 }
 
-// 15. PASSAR TURNO
+// ==========================================
+// PASSAR A VEZ
+// ==========================================
+
 async function passTurn() {
+  if (!isMyTurn() || busy) return;
+
+  busy = true;
+
   try {
-    const snap = await getRoomRef().get();
-
-    if (!snap.exists) return;
-
-    const data = snap.data();
-
-    if (data.currentTurn !== currentUser.uid) return;
-
-    const opponent = data.players.find(
-      p => p.uid !== currentUser.uid
-    );
-
-    if (!opponent) return;
-
-    await getRoomRef().update({
-      currentTurn: opponent.uid
+    await roomRef.update({
+      turn: currentRoom.players.find(p => p.uid !== currentUser.uid).uid
     });
   } catch (error) {
-    console.error("Erro ao passar turno:", error);
+    console.error(error);
+  } finally {
+    busy = false;
   }
 }
 
-// 16. FIM DE JOGO
-function showEndGame() {
-  showScreen(endScreen);
+// ==========================================
+// FINAL
+// ==========================================
 
-  const winner = roomData.players.find(
-    p => p.uid === roomData.winner
-  );
-
-  const loser = roomData.players.find(
-    p => p.uid !== roomData.winner
+function renderEnd() {
+  const winner = currentRoom.players.find(p =>
+    p.uid === currentRoom.winner
   );
 
   winnerMessage.textContent = winner
-    ? `🏆 ${winner.name} venceu a Batalha dos Alimentos!`
-    : "Fim de jogo!";
+    ? "🏆 " + winner.name + " venceu!"
+    : "🏆 Fim de jogo!";
 
-  finalMessage.textContent = loser
-    ? `${loser.name}, continue estudando Química e tente novamente!`
-    : "Parabéns pela partida!";
+  finalMessage.textContent =
+    "Todos os navios adversários foram encontrados. Parabéns pela batalha!";
 }
+
+// ==========================================
+// ERROS GERAIS
+// ==========================================
+
+window.addEventListener("error", event => {
+  console.error("Erro de script:", event.message);
+});
