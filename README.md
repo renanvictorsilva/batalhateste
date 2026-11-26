@@ -1,47 +1,72 @@
-# Batalha Digital – Combate ao Cyberbullying
+# ⚗️ Química no Cotidiano — Batalha Química
 
-## Sobre o projeto
+Um jogo educativo multiplayer online que combina conhecimentos de Química com uma batalha naval. Os jogadores precisam responder a perguntas sobre situações do cotidiano para liberar ataques e tentar localizar os navios do adversário.
 
-O Batalha Digital é um jogo educativo desenvolvido para as aulas de Educação Digital, destinado aos estudantes do 7º ano do Ensino Fundamental.
+## 🎮 Sobre o jogo
 
-O jogo utiliza a dinâmica de batalha naval para trabalhar conceitos relacionados ao cyberbullying, ao respeito no ambiente virtual e à cidadania digital.
+A Batalha Química foi desenvolvida para tornar o aprendizado de Química mais interativo, divertido e contextualizado, aproximando conceitos científicos das experiências vivenciadas pelos estudantes.
 
-## Objetivos
+Os participantes competem entre si em uma batalha naval, respondendo a perguntas antes de realizar seus ataques.
 
-- Compreender o que é cyberbullying.
-- Identificar situações de violência e exposição no ambiente digital.
-- Refletir sobre as consequências das atitudes na internet.
-- Desenvolver atitudes de respeito, empatia e responsabilidade digital.
-- Incentivar a tomada de decisões conscientes no uso das tecnologias.
+## 🧪 Temas abordados
 
-## Como jogar
+As questões envolvem situações cotidianas relacionadas a:
 
-1. Um jogador cria uma sala e recebe um código.
-2. O segundo jogador utiliza esse código para entrar na partida.
-3. Cada jogador organiza suas embarcações no tabuleiro.
-4. Durante a partida, os jogadores respondem a perguntas sobre cyberbullying.
-5. Ao acertar a resposta, o jogador pode realizar um ataque no tabuleiro adversário.
-6. Vence quem conseguir localizar e afundar todas as embarcações do adversário.
+- Transformações físicas e químicas
+- Estados físicos da matéria
+- Dissolução e solubilidade
+- Misturas e separação de substâncias
+- Temperatura e calor
+- Reações químicas
+- Combustão
+- Oxidação e corrosão
+- Produtos de limpeza
+- Energia e eletricidade
+- Química ambiental
+- Densidade
+- Concentração de soluções
 
-## Tecnologias utilizadas
+## 🕹️ Como jogar
+
+1. Digite seu nome.
+2. Crie uma partida ou entre em uma sala utilizando um código.
+3. Compartilhe o código com outro jogador.
+4. Aguarde os dois jogadores entrarem.
+5. Durante sua vez, responda a uma questão de Química.
+6. Se acertar, poderá escolher uma posição no tabuleiro adversário para atacar.
+7. Se errar, sua vez será passada ao adversário.
+8. Descubra e acerte todos os navios do oponente para vencer.
+
+## 📋 Regras
+
+- A partida é disputada entre dois jogadores.
+- Cada jogador possui um tabuleiro 8 × 8.
+- Os navios são posicionados automaticamente.
+- As perguntas possuem diferentes níveis de dificuldade.
+- As questões são sorteadas sem repetição até que o banco seja utilizado.
+- Respostas corretas liberam o ataque.
+- Respostas incorretas passam a vez.
+- Vence quem acertar todas as posições ocupadas pelos navios adversários.
+
+## 🛠️ Tecnologias utilizadas
 
 - HTML5
 - CSS3
 - JavaScript
 - Firebase Authentication
-- Firebase Firestore
+- Cloud Firestore
 - GitHub Pages
 
-## Acesso ao jogo
+## 🌐 Acesso ao jogo
 
-O jogo está disponível online:
+O jogo pode ser acessado pelo navegador:
 
 https://renanvictorsilva.github.io/batalhateste/
 
-## Público-alvo
+## 🎓 Objetivo educacional
 
-Estudantes do 7º ano do Ensino Fundamental – Educação Digital.
+Promover a aprendizagem de conceitos químicos por meio de uma experiência gamificada, incentivando o raciocínio, a resolução de problemas, a participação e a aplicação da Química em situações reais.
 
-## Finalidade pedagógica
+---
 
-O jogo busca promover a aprendizagem por meio da interação, da competição saudável e da reflexão sobre situações cotidianas relacionadas ao comportamento e à segurança no ambiente digital.
+Desenvolvido como recurso educacional para o ensino de Química.
