@@ -3,8 +3,9 @@
 // ==========================================
 
 // FIREBASE
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDdj12NqEP1Hxr-rqJ04ezLBheMuEZfqs",
+  apiKey: "AIzaSyDdj12NqEP1Hxr-rqlJO4ezLBheMuEZfqs",
   authDomain: "batalhateste.firebaseapp.com",
   projectId: "batalhateste",
   storageBucket: "batalhateste.firebasestorage.app",
