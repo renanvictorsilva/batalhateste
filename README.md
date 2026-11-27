@@ -1,58 +1,101 @@
-# 🛡️ Batalha contra o Cyberbullying
 
-Jogo educativo multiplayer desenvolvido para promover conscientização sobre cyberbullying, respeito, empatia e segurança no ambiente digital.
+# 🌊 Batalha Naval – Cada Gota Conta
 
-## 🎮 Sobre o jogo
+## 🎮 Sobre o projeto
 
-A Batalha contra o Cyberbullying utiliza a dinâmica de batalha naval para trabalhar conceitos relacionados à cidadania digital e ao uso responsável da internet.
+**Batalha Naval – Cada Gota Conta** é um jogo educativo multiplayer inspirado no clássico jogo de batalha naval, desenvolvido para promover a aprendizagem de conteúdos relacionados à água, ao meio ambiente e à sustentabilidade de forma interativa e divertida.
 
-Os jogadores enfrentam desafios e respondem a perguntas antes de realizar ataques ao tabuleiro adversário.
+Os jogadores enfrentam um adversário em uma batalha de estratégia. Para realizar ataques, precisam responder corretamente a perguntas sobre recursos hídricos, consumo consciente, poluição, saneamento e preservação ambiental.
+
+---
 
 ## 🎯 Objetivos
 
-- Compreender o conceito de cyberbullying.
-- Identificar atitudes de violência e desrespeito no ambiente digital.
-- Desenvolver empatia e responsabilidade digital.
-- Refletir sobre privacidade e segurança online.
-- Reconhecer formas de prevenção e enfrentamento.
-- Incentivar atitudes de respeito nas redes sociais.
+- Promover a aprendizagem sobre a importância da água.
+- Desenvolver consciência sobre o uso sustentável dos recursos hídricos.
+- Revisar conteúdos de forma lúdica e interativa.
+- Estimular o raciocínio lógico e a estratégia.
+- Incentivar a competição saudável e a tomada de decisões.
+- Integrar tecnologia e educação.
 
-## 📚 Conteúdos abordados
-
-- Cyberbullying
-- Empatia e respeito
-- Cidadania digital
-- Segurança na internet
-- Privacidade
-- Redes sociais
-- Fake news
-- Exposição de imagens
-- Denúncia de conteúdos
-- Responsabilidade digital
-- Direitos no ambiente virtual
-- Comportamento online
+---
 
 ## 🕹️ Como jogar
 
-1. Digite seu nome.
-2. Crie uma partida ou entre em uma sala.
-3. Compartilhe o código da sala com outro jogador.
-4. Aguarde a conexão dos dois jogadores.
-5. Responda às perguntas sobre Cyberbullying.
-6. Se acertar, poderá realizar um ataque ao tabuleiro adversário.
-7. Se errar, sua vez será passada.
-8. Localize todos os navios do adversário para vencer.
+### 1. Criar ou entrar em uma sala
 
-## 📋 Regras
+- Um jogador cria uma sala e recebe um código.
+- O segundo jogador utiliza o código para entrar.
+- A partida acontece entre dois jogadores.
 
-- Dois jogadores por partida.
-- Tabuleiros de 8 × 8.
-- Navios posicionados automaticamente.
-- Perguntas divididas em três níveis de dificuldade.
-- Questões sorteadas sem repetição até o banco ser utilizado.
-- Resposta correta libera o ataque.
-- Resposta incorreta passa a vez.
-- Vence quem acertar todas as posições dos navios adversários.
+### 2. Organizar sua frota
+
+Cada jogador possui uma frota composta por:
+
+- 🚢 1 barco de 3 posições
+- 🚤 2 barcos de 2 posições
+
+Os barcos podem ser posicionados manualmente no tabuleiro ou distribuídos aleatoriamente.
+
+### 3. Responder às perguntas
+
+Durante sua vez, o jogador escolhe uma posição no tabuleiro adversário e responde a uma questão.
+
+- ✅ Resposta correta: permite realizar o ataque.
+- ❌ Resposta incorreta: o jogador perde a oportunidade de atacar e a vez passa para o adversário.
+
+### 4. Atacar
+
+O objetivo é localizar e atingir todas as posições ocupadas pelos barcos adversários.
+
+### 5. Vencer
+
+Vence o jogador que conseguir atingir todas as posições da frota adversária primeiro.
+
+---
+
+## 📚 Conteúdos abordados
+
+As questões são organizadas em diferentes níveis de dificuldade:
+
+### 🟢 Fácil
+- Importância da água
+- Água potável
+- Ciclo da água
+- Consumo consciente
+- Poluição hídrica
+
+### 🟡 Médio
+- Tratamento de água
+- Saneamento
+- Bacias hidrográficas
+- Águas subterrâneas
+- Eutrofização
+- Água virtual
+
+### 🔴 Difícil
+- Pegada hídrica
+- Bioacumulação
+- Impactos do desmatamento no ciclo da água
+- Contaminação de aquíferos
+- Sustentabilidade dos recursos hídricos
+
+---
+
+## 🧠 Aprendizagem gamificada
+
+O projeto utiliza elementos de gamificação, como:
+
+- Competição entre jogadores
+- Desafios com perguntas
+- Estratégia de ataque
+- Progressão da partida
+- Feedback imediato
+- Recompensa pelo conhecimento
+
+A proposta é transformar a revisão de conteúdos em uma experiência mais envolvente, incentivando a participação ativa dos estudantes.
+
+---
 
 ## 🛠️ Tecnologias utilizadas
 
@@ -63,14 +106,26 @@ Os jogadores enfrentam desafios e respondem a perguntas antes de realizar ataque
 - Cloud Firestore
 - GitHub Pages
 
-## 🌐 Acesso ao jogo
+---
+
+## 🌐 Acesse o jogo
+
+🎮 **Jogar online:**
 
 https://renanvictorsilva.github.io/batalhateste/
 
-## 🎓 Finalidade educacional
+---
 
-Promover reflexão sobre comportamentos no ambiente digital por meio da gamificação, incentivando o respeito, a empatia, o pensamento crítico e a participação responsável dos estudantes.
+## 👨‍🏫 Aplicação educacional
+
+O jogo pode ser utilizado em atividades pedagógicas, revisões de conteúdo, projetos interdisciplinares e propostas de educação ambiental, especialmente em temas relacionados à água e sustentabilidade.
 
 ---
 
-Projeto educativo: Batalha contra o Cyberbullying.
+## 🌎 Tema do projeto
+
+**Cada Gota Conta: conhecimento, estratégia e consciência para preservar a água.**
+
+---
+
+Desenvolvido como projeto educativo utilizando tecnologias web e recursos de gamificação.
