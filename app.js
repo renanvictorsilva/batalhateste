@@ -2,14 +2,10 @@
 /* =========================================================
    BATALHA NAVAL - CADA GOTA CONTA
    Multiplayer | Firebase | Tabuleiro 8x8
-   Frota: 1 barco de 3 + 2 barcos de 2
    ========================================================= */
 
-// ---------------- FIREBASE ----------------
-
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDdj12NqEP1Hxr-rqlJO4ezLBheMuEZfqs",
+  apiKey: "AIzaSyDdj12NqEP1Hxr-rqlJO4ezLBheEZfqs",
   authDomain: "batalhateste.firebaseapp.com",
   projectId: "batalhateste",
   storageBucket: "batalhateste.firebasestorage.app",
@@ -23,8 +19,6 @@ if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ---------------- CONFIGURAÇÕES ----------------
-
 const BOARD_SIZE = 8;
 const FLEET_SIZES = [3, 2, 2];
 
@@ -37,6 +31,7 @@ let orientation = "horizontal";
 let selectedAttack = null;
 let currentQuestion = null;
 let answered = false;
+
 let ships = createFleet();
 
 // ---------------- PERGUNTAS ----------------
@@ -76,9 +71,7 @@ const QUESTIONS = [
   {level:"Difícil",topic:"Recursos hídricos",question:"O que significa uso sustentável da água?",options:["Utilizar toda água disponível","Usar sem planejamento","Atender necessidades atuais sem comprometer o futuro","Evitar qualquer uso"],answer:2}
 ];
 
-// =========================================================
-// UTILITÁRIOS
-// =========================================================
+// ---------------- FUNÇÕES BÁSICAS ----------------
 
 function $(id) {
   return document.getElementById(id);
@@ -125,7 +118,7 @@ function allShipCells() {
 }
 
 function occupied(cells, row, col) {
-  return cells.some(c => c.row === row && c.col === col);
+  return cells.some(c => Number(c.row) === row && Number(c.col) === col);
 }
 
 function cellKey(row, col) {
@@ -136,27 +129,7 @@ function randomItem(array) {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-function shuffle(array) {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
-function safeText(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-// =========================================================
-// AUTHENTICAÇÃO
-// =========================================================
+// ---------------- AUTENTICAÇÃO ----------------
 
 auth.signInAnonymously()
   .then(result => {
@@ -165,16 +138,14 @@ auth.signInAnonymously()
   })
   .catch(error => {
     console.error("Erro de autenticação:", error);
-    message("homeMessage", "Não foi possível conectar ao Firebase.");
+    message("homeMessage", "Erro de conexão com Firebase.");
   });
 
-// =========================================================
-// CRIAR SALA
-// =========================================================
+// ---------------- CRIAR SALA ----------------
 
 $("createRoomBtn")?.addEventListener("click", async () => {
   if (!currentUser) {
-    message("homeMessage", "Aguarde a conexão com o Firebase...");
+    message("homeMessage", "Aguarde a conexão com Firebase...");
     return;
   }
 
@@ -202,7 +173,7 @@ $("createRoomBtn")?.addEventListener("click", async () => {
     askedQuestions: [],
     questionLogs: [],
     winner: null,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    createdAt: Date.now()
   };
 
   try {
@@ -212,13 +183,11 @@ $("createRoomBtn")?.addEventListener("click", async () => {
     subscribeRoom(code);
   } catch (error) {
     console.error(error);
-    message("homeMessage", "Erro ao criar sala. Confira o Firebase.");
+    message("homeMessage", "Erro ao criar sala.");
   }
 });
 
-// =========================================================
-// ENTRAR NA SALA
-// =========================================================
+// ---------------- ENTRAR NA SALA ----------------
 
 $("joinRoomBtn")?.addEventListener("click", async () => {
   if (!currentUser) {
@@ -230,7 +199,7 @@ $("joinRoomBtn")?.addEventListener("click", async () => {
   const code = $("roomCodeInput")?.value.trim().toUpperCase();
 
   if (!name || !code) {
-    message("homeMessage", "Digite seu nome e o código da sala.");
+    message("homeMessage", "Digite nome e código da sala.");
     return;
   }
 
@@ -244,17 +213,9 @@ $("joinRoomBtn")?.addEventListener("click", async () => {
 
       const room = snap.data();
 
-      if (room.players.some(p => p.uid === currentUser.uid)) {
-        return;
-      }
-
-      if (room.players.length >= 2) {
-        throw new Error("Sala cheia.");
-      }
-
-      if (room.status !== "waiting") {
-        throw new Error("Esta partida já começou.");
-      }
+      if (room.players.some(p => p.uid === currentUser.uid)) return;
+      if (room.players.length >= 2) throw new Error("Sala cheia.");
+      if (room.status !== "waiting") throw new Error("Partida já iniciada.");
 
       transaction.update(ref, {
         players: [...room.players, {
@@ -271,16 +232,13 @@ $("joinRoomBtn")?.addEventListener("click", async () => {
     currentRoomId = code;
     showScreen("lobbyScreen");
     subscribeRoom(code);
-
   } catch (error) {
     console.error(error);
-    message("homeMessage", error.message || "Erro ao entrar na sala.");
+    message("homeMessage", error.message || "Erro ao entrar.");
   }
 });
 
-// =========================================================
-// OBSERVAR SALA
-// =========================================================
+// ---------------- OBSERVAR SALA ----------------
 
 function subscribeRoom(code) {
   if (roomUnsubscribe) roomUnsubscribe();
@@ -289,23 +247,20 @@ function subscribeRoom(code) {
     .doc(code)
     .onSnapshot(snapshot => {
       if (!snapshot.exists) {
-        message("lobbyStatus", "A sala não existe mais.");
+        message("lobbyStatus", "Sala não encontrada.");
         return;
       }
 
       currentRoom = snapshot.data();
       renderRoom(currentRoom);
-    }, error => {
-      console.error("Erro ao observar sala:", error);
-    });
+    }, error => console.error(error));
 }
 
 function renderRoom(room) {
-  if ($("roomCodeDisplay")) {
-    $("roomCodeDisplay").textContent = room.code;
-  }
+  if ($("roomCodeDisplay")) $("roomCodeDisplay").textContent = room.code;
 
   const list = $("playersList");
+
   if (list) {
     list.innerHTML = "";
 
@@ -334,7 +289,7 @@ function renderRoom(room) {
     const me = getMe(room);
 
     if (me?.ready) {
-      message("lobbyStatus", "Frota confirmada. Aguardando o adversário...");
+      message("lobbyStatus", "Frota confirmada. Aguardando adversário...");
       showScreen("lobbyScreen");
     } else {
       renderSetup();
@@ -352,9 +307,7 @@ function renderRoom(room) {
   }
 }
 
-// =========================================================
-// COPIAR CÓDIGO
-// =========================================================
+// ---------------- COPIAR CÓDIGO DA SALA ----------------
 
 $("copyCodeBtn")?.addEventListener("click", async () => {
   if (!currentRoomId) return;
@@ -372,9 +325,9 @@ $("copyCodeBtn")?.addEventListener("click", async () => {
   }
 });
 
-// =========================================================
-// POSICIONAMENTO DA FROTA
-// =========================================================
+// ========================================================
+// POSICIONAMENTO DE NAVIOS
+// ========================================================
 
 function renderSetup() {
   showScreen("setupScreen");
@@ -434,7 +387,7 @@ function placeShip(row, col) {
   const index = ships.findIndex(ship => ship.cells.length === 0);
 
   if (index === -1) {
-    message("setupMessage", "Todos os barcos já estão posicionados.");
+    message("setupMessage", "Todos os barcos estão posicionados.");
     return;
   }
 
@@ -450,12 +403,12 @@ function placeShip(row, col) {
       return;
     }
 
-    newCells.push({row:r, col:c});
+    newCells.push({ row: r, col: c });
   }
 
-  const alreadyPlaced = allShipCells();
+  const placedCells = allShipCells();
 
-  if (newCells.some(c => occupied(alreadyPlaced, c.row, c.col))) {
+  if (newCells.some(c => occupied(placedCells, c.row, c.col))) {
     message("setupMessage", "Os barcos não podem se sobrepor.");
     return;
   }
@@ -475,8 +428,10 @@ $("rotateShipBtn")?.addEventListener("click", () => {
       : "↕ Vertical";
   }
 
-  message("setupMessage", `Orientação: ${orientation}`);
+  message("setupMessage", "Orientação: " + orientation);
 });
+
+// ---------------- POSICIONAMENTO ALEATÓRIO ----------------
 
 $("randomShipsBtn")?.addEventListener("click", () => {
   ships = createFleet();
@@ -499,14 +454,12 @@ $("randomShipsBtn")?.addEventListener("click", () => {
         const c = dir === "horizontal" ? col + i : col;
 
         if (r >= BOARD_SIZE || c >= BOARD_SIZE) break;
-        candidate.push({row:r, col:c});
+
+        candidate.push({ row: r, col: c });
       }
 
       if (candidate.length !== ship.size) continue;
-
-      if (candidate.some(c => occupied(allShipCells(), c.row, c.col))) {
-        continue;
-      }
+      if (candidate.some(c => occupied(allShipCells(), c.row, c.col))) continue;
 
       ship.cells = candidate;
       placed = true;
@@ -517,20 +470,46 @@ $("randomShipsBtn")?.addEventListener("click", () => {
   renderSetupBoard();
 });
 
-// =========================================================
-// CONFIRMAR FROTA
-// =========================================================
+// ---------------- CONFIRMAR FROTA (CORRIGIDO) ----------------
 
 $("confirmShipsBtn")?.addEventListener("click", async () => {
   if (!allShipsPlaced() || !currentRoomId || !currentUser) return;
 
   try {
     const roomRef = db.collection("rooms").doc(currentRoomId);
-    const privateRef = roomRef.collection("privateBoards").doc(currentUser.uid);
+    const privateRef = roomRef
+      .collection("privateBoards")
+      .doc(currentUser.uid);
+
+    // CORREÇÃO: normalizar e validar as coordenadas
+    const cleanShips = ships.map(ship =>
+      ship.cells.map(cell => ({
+        row: Number(cell.row),
+        col: Number(cell.col)
+      }))
+    );
+
+    // Verificação para impedir undefined/NaN
+    const validCoordinates = cleanShips.every(ship =>
+      ship.every(cell =>
+        Number.isInteger(cell.row) &&
+        Number.isInteger(cell.col) &&
+        cell.row >= 0 &&
+        cell.row < BOARD_SIZE &&
+        cell.col >= 0 &&
+        cell.col < BOARD_SIZE
+      )
+    );
+
+    if (!validCoordinates) {
+      message("setupMessage", "Erro nas coordenadas dos barcos. Reposicione.");
+      console.error("Coordenadas inválidas:", cleanShips);
+      return;
+    }
 
     await privateRef.set({
-      uid: currentUser.uid,
-      ships: ships.map(ship => ship.cells),
+      uid: String(currentUser.uid),
+      ships: cleanShips,
       confirmed: true,
       updatedAt: Date.now()
     });
@@ -543,7 +522,7 @@ $("confirmShipsBtn")?.addEventListener("click", async () => {
 
       const players = room.players.map(player =>
         player.uid === currentUser.uid
-          ? {...player, ready:true}
+          ? { ...player, ready: true }
           : player
       );
 
@@ -560,14 +539,14 @@ $("confirmShipsBtn")?.addEventListener("click", async () => {
     message("setupMessage", "Frota confirmada!");
 
   } catch (error) {
-    console.error(error);
-    message("setupMessage", "Erro ao confirmar frota.");
+    console.error("Erro ao confirmar frota:", error);
+    message("setupMessage", "Erro ao confirmar frota: " + error.message);
   }
 });
 
-// =========================================================
-// TABULEIROS DURANTE A PARTIDA
-// =========================================================
+// ========================================================
+// TABULEIROS
+// ========================================================
 
 function renderGame(room) {
   showScreen("gameScreen");
@@ -614,22 +593,27 @@ async function renderMyBoard(room) {
       .doc(currentUser.uid)
       .get();
 
-    if (snap.exists) myShips = snap.data().ships.flat();
+    if (snap.exists && Array.isArray(snap.data().ships)) {
+      myShips = snap.data().ships.flat();
+    }
   } catch (error) {
-    console.error(error);
+    console.error("Erro lendo tabuleiro:", error);
   }
 
-  const shipKeys = new Set(myShips.map(c => cellKey(c.row,c.col)));
+  const shipKeys = new Set(
+    myShips.map(c => cellKey(Number(c.row), Number(c.col)))
+  );
 
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
       const cell = document.createElement("div");
       cell.className = "cell";
 
-      const key = cellKey(row,col);
-      if (shipKeys.has(key)) cell.classList.add("ship-cell");
+      if (shipKeys.has(cellKey(row,col))) {
+        cell.classList.add("ship-cell");
+      }
 
-      const shot = room.shots?.find(s =>
+      const shot = (room.shots || []).find(s =>
         s.targetUid === currentUser.uid &&
         s.row === row && s.col === col
       );
@@ -661,7 +645,7 @@ function renderEnemyBoard(room) {
       const button = document.createElement("button");
       button.className = "cell enemy-cell";
 
-      const shot = room.shots?.find(s =>
+      const shot = (room.shots || []).find(s =>
         s.targetUid === opponent.uid &&
         s.row === row && s.col === col
       );
@@ -676,7 +660,7 @@ function renderEnemyBoard(room) {
 
         button.addEventListener("click", () => {
           if (!myTurn || selectedAttack) return;
-          selectedAttack = {row,col};
+          selectedAttack = { row, col };
           beginQuestion();
         });
       }
@@ -686,9 +670,9 @@ function renderEnemyBoard(room) {
   }
 }
 
-// =========================================================
-// SISTEMA DE PERGUNTAS
-// =========================================================
+// ========================================================
+// PERGUNTAS E RESPOSTAS
+// ========================================================
 
 function beginQuestion() {
   if (!selectedAttack || !currentRoom) return;
@@ -696,9 +680,11 @@ function beginQuestion() {
   const used = currentRoom.askedQuestions || [];
   const available = QUESTIONS.filter(q => !used.includes(q.question));
 
-  currentQuestion = randomItem(available.length ? available : QUESTIONS);
-  answered = false;
+  currentQuestion = available.length
+    ? available[Math.floor(Math.random() * available.length)]
+    : QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
 
+  answered = false;
   renderQuestion();
 }
 
@@ -740,8 +726,11 @@ async function submitAnswer(index) {
   document.querySelectorAll(".answer-btn").forEach((button,i) => {
     button.disabled = true;
 
-    if (i === currentQuestion.answer) button.classList.add("correct");
-    else if (i === index && !correct) button.classList.add("wrong");
+    if (i === currentQuestion.answer) {
+      button.classList.add("correct");
+    } else if (i === index && !correct) {
+      button.classList.add("wrong");
+    }
   });
 
   if ($("answerFeedback")) {
@@ -753,22 +742,24 @@ async function submitAnswer(index) {
   try {
     await processTurn(index, correct);
   } catch (error) {
-    console.error(error);
+    console.error("Erro na jogada:", error);
+
     if ($("answerFeedback")) {
-      $("answerFeedback").textContent += " Não foi possível registrar a jogada.";
+      $("answerFeedback").textContent += " Erro ao registrar jogada.";
     }
+
     answered = false;
   }
 }
 
-// =========================================================
-// PROCESSAR ATAQUE
-// =========================================================
+// ========================================================
+// PROCESSAR JOGADA
+// ========================================================
 
 async function processTurn(selectedIndex, correct) {
   const roomRef = db.collection("rooms").doc(currentRoomId);
-
   const snap = await roomRef.get();
+
   if (!snap.exists) throw new Error("Sala não encontrada.");
 
   const room = snap.data();
@@ -784,9 +775,6 @@ async function processTurn(selectedIndex, correct) {
 
   let hit = false;
 
-  // Consulta o tabuleiro adversário.
-  // IMPORTANTE: no Spark e com regras abertas, esta arquitetura
-  // não é segura contra jogadores que inspecionam o banco.
   if (correct) {
     const opponentSnap = await roomRef
       .collection("privateBoards")
@@ -831,7 +819,6 @@ async function processTurn(selectedIndex, correct) {
     };
   });
 
-  // Acerto de resposta libera o ataque.
   if (correct) {
     shots.push({
       shooterUid: currentUser.uid,
@@ -843,7 +830,6 @@ async function processTurn(selectedIndex, correct) {
     });
   }
 
-  // Verificar vitória.
   const boardSnap = await roomRef
     .collection("privateBoards")
     .doc(opponent.uid)
@@ -855,8 +841,7 @@ async function processTurn(selectedIndex, correct) {
 
   const enemyKeys = new Set(enemyCells.map(c => cellKey(c.row,c.col)));
   const hitKeys = new Set(
-    shots
-      .filter(s => s.targetUid === opponent.uid && s.hit)
+    shots.filter(s => s.targetUid === opponent.uid && s.hit)
       .map(s => cellKey(s.row,s.col))
   );
 
@@ -883,9 +868,9 @@ async function processTurn(selectedIndex, correct) {
   answered = false;
 }
 
-// =========================================================
-// FINAL DA PARTIDA
-// =========================================================
+// ========================================================
+// FIM DE JOGO
+// ========================================================
 
 function renderEnd(room) {
   showScreen("endScreen");
@@ -909,10 +894,7 @@ $("playAgainBtn")?.addEventListener("click", () => {
   location.reload();
 });
 
-// =========================================================
-// INICIALIZAÇÃO
-// =========================================================
+// ---------------- INICIALIZAÇÃO ----------------
 
 showScreen("homeScreen");
-
 console.log("Batalha Naval - Cada Gota Conta carregado.");
