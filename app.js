@@ -1,4 +1,12 @@
 
+/* =========================================================
+   BATALHA NAVAL - CADA GOTA CONTA
+   Multiplayer | Firebase | Tabuleiro 8x8
+   Frota: 1 barco de 3 + 2 barcos de 2
+   ========================================================= */
+
+// ---------------- FIREBASE ----------------
+
 const firebaseConfig = {
   apiKey: "AIzaSyDdj12NqEP1Hxr-rqlJO4ezLBheEZfqs",
   authDomain: "batalhateste.firebaseapp.com",
@@ -9,473 +17,185 @@ const firebaseConfig = {
   measurementId: "G-D82NBCRT55"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-const $ = id => document.getElementById(id);
+// ---------------- CONFIGURAÇÕES ----------------
+
+const BOARD_SIZE = 8;
+const FLEET_SIZES = [3, 2, 2];
 
 let currentUser = null;
+let currentRoomId = null;
 let currentRoom = null;
 let roomUnsubscribe = null;
-let currentRoomId = null;
-
-let selectedShipIndex = 0;
-let ships = [
-  { size: 3, name: "Barco de 3 casas", cells: [] },
-  { size: 2, name: "Barco de 2 casas", cells: [] },
-  { size: 2, name: "Barco de 2 casas", cells: [] }
-];
 
 let orientation = "horizontal";
 let selectedAttack = null;
 let currentQuestion = null;
 let answered = false;
+let ships = createFleet();
 
-const BOARD_SIZE = 8;
+// ---------------- PERGUNTAS ----------------
 
 const QUESTIONS = [
-  {
-    level: "Fácil",
-    topic: "Água",
-    question: "Qual é a fórmula química da água?",
-    options: ["CO₂", "H₂O", "O₂", "NaCl"],
-    answer: 1
-  },
-  {
-    level: "Fácil",
-    topic: "Água",
-    question: "Qual é a principal fonte de água para rios e lagos?",
-    options: ["Chuva", "Petróleo", "Vento", "Minérios"],
-    answer: 0
-  },
-  {
-    level: "Fácil",
-    topic: "Conservação",
-    question: "Qual atitude ajuda a economizar água?",
-    options: [
-      "Deixar a torneira aberta",
-      "Lavar calçadas diariamente",
-      "Fechar a torneira ao escovar os dentes",
-      "Tomar banhos mais longos"
-    ],
-    answer: 2
-  },
-  {
-    level: "Fácil",
-    topic: "Água potável",
-    question: "O que significa água potável?",
-    options: [
-      "Água com sal",
-      "Água própria para consumo humano",
-      "Água de qualquer rio",
-      "Água com resíduos"
-    ],
-    answer: 1
-  },
-  {
-    level: "Fácil",
-    topic: "Ciclo da água",
-    question: "Como se chama a passagem da água líquida para vapor?",
-    options: ["Condensação", "Solidificação", "Evaporação", "Fusão"],
-    answer: 2
-  },
-  {
-    level: "Fácil",
-    topic: "Poluição",
-    question: "Qual ação polui diretamente os rios?",
-    options: [
-      "Preservar as matas",
-      "Descartar lixo na água",
-      "Economizar água",
-      "Reutilizar materiais"
-    ],
-    answer: 1
-  },
-  {
-    level: "Fácil",
-    topic: "Ciclo da água",
-    question: "A água das nuvens retorna à superfície principalmente por meio de:",
-    options: ["Precipitação", "Combustão", "Filtração", "Fusão"],
-    answer: 0
-  },
-  {
-    level: "Fácil",
-    topic: "Conservação",
-    question: "Uma torneira pingando pode:",
-    options: [
-      "Economizar água",
-      "Aumentar o desperdício de água",
-      "Purificar a água",
-      "Diminuir a poluição do ar"
-    ],
-    answer: 1
-  },
-  {
-    level: "Fácil",
-    topic: "Saneamento",
-    question: "Qual é a importância do tratamento de esgoto?",
-    options: [
-      "Aumentar a poluição",
-      "Devolver resíduos aos rios",
-      "Reduzir a contaminação da água",
-      "Produzir água salgada"
-    ],
-    answer: 2
-  },
-  {
-    level: "Fácil",
-    topic: "Água",
-    question: "Qual estado físico da água encontramos no gelo?",
-    options: ["Gasoso", "Líquido", "Plasma", "Sólido"],
-    answer: 3
-  },
+  {level:"Fácil",topic:"Água",question:"Qual é a fórmula química da água?",options:["CO₂","H₂O","O₂","NaCl"],answer:1},
+  {level:"Fácil",topic:"Conservação",question:"Qual atitude ajuda a economizar água?",options:["Deixar a torneira aberta","Lavar calçada todo dia com mangueira","Fechar a torneira ao escovar os dentes","Tomar banhos mais longos"],answer:2},
+  {level:"Fácil",topic:"Água potável",question:"O que significa água potável?",options:["Água própria para consumo humano","Água com sal","Água de qualquer rio","Água com resíduos"],answer:0},
+  {level:"Fácil",topic:"Ciclo da água",question:"Como se chama a passagem da água líquida para vapor?",options:["Condensação","Solidificação","Evaporação","Fusão"],answer:2},
+  {level:"Fácil",topic:"Poluição",question:"Qual ação polui diretamente rios e lagos?",options:["Preservar a mata","Descartar lixo na água","Economizar água","Reutilizar materiais"],answer:1},
+  {level:"Fácil",topic:"Ciclo da água",question:"Como a água das nuvens retorna à superfície?",options:["Precipitação","Combustão","Filtração","Fusão"],answer:0},
+  {level:"Fácil",topic:"Conservação",question:"Uma torneira pingando pode causar:",options:["Economia de água","Desperdício de água","Purificação","Redução da poluição"],answer:1},
+  {level:"Fácil",topic:"Saneamento",question:"Qual é a importância do tratamento de esgoto?",options:["Aumentar poluição","Devolver resíduos aos rios","Reduzir contaminação","Produzir água salgada"],answer:2},
+  {level:"Fácil",topic:"Água",question:"Em qual estado físico encontramos o gelo?",options:["Gasoso","Líquido","Plasma","Sólido"],answer:3},
+  {level:"Fácil",topic:"Água",question:"Qual é a maior fonte de água do planeta?",options:["Oceanos","Rios","Lagos","Nuvens"],answer:0},
 
-  {
-    level: "Médio",
-    topic: "Ciclo da água",
-    question: "O que acontece durante a condensação?",
-    options: [
-      "O vapor se transforma em líquido",
-      "O gelo vira vapor",
-      "A água desaparece",
-      "O líquido vira sólido"
-    ],
-    answer: 0
-  },
-  {
-    level: "Médio",
-    topic: "Ciclo da água",
-    question: "Qual é o papel da vegetação no ciclo da água?",
-    options: [
-      "Impedir toda a chuva",
-      "Contribuir para a evapotranspiração",
-      "Eliminar os rios",
-      "Transformar água em petróleo"
-    ],
-    answer: 1
-  },
-  {
-    level: "Médio",
-    topic: "Água subterrânea",
-    question: "Onde parte da água da chuva pode ficar armazenada?",
-    options: [
-      "Apenas nas nuvens",
-      "Dentro do Sol",
-      "Nos aquíferos",
-      "No espaço"
-    ],
-    answer: 2
-  },
-  {
-    level: "Médio",
-    topic: "Saneamento",
-    question: "Qual processo pode remover partículas sólidas da água?",
-    options: ["Filtração", "Combustão", "Fermentação", "Oxidação do plástico"],
-    answer: 0
-  },
-  {
-    level: "Médio",
-    topic: "Conservação",
-    question: "O que é uma bacia hidrográfica?",
-    options: [
-      "Uma piscina artificial",
-      "Uma área drenada por um rio e seus afluentes",
-      "Uma estação de tratamento",
-      "Um reservatório de água salgada"
-    ],
-    answer: 1
-  },
-  {
-    level: "Médio",
-    topic: "Poluição",
-    question: "O excesso de fertilizantes em rios pode provocar:",
-    options: [
-      "Aumento da potabilidade",
-      "Desaparecimento da água",
-      "Eutrofização",
-      "Congelamento imediato"
-    ],
-    answer: 2
-  },
-  {
-    level: "Médio",
-    topic: "Conservação",
-    question: "Por que a vegetação nas margens dos rios é importante?",
-    options: [
-      "Ajuda a proteger o solo e reduzir erosão",
-      "Aumenta o lixo no rio",
-      "Impede a vida aquática",
-      "Aumenta a salinidade"
-    ],
-    answer: 0
-  },
-  {
-    level: "Médio",
-    topic: "Água potável",
-    question: "Por que a água transparente não é necessariamente potável?",
-    options: [
-      "Porque pode conter microrganismos ou substâncias invisíveis",
-      "Porque toda água transparente é salgada",
-      "Porque a água não tem cor",
-      "Porque a transparência indica congelamento"
-    ],
-    answer: 0
-  },
-  {
-    level: "Médio",
-    topic: "Consumo",
-    question: "O que é água virtual?",
-    options: [
-      "Água criada por computador",
-      "Água invisível no ambiente",
-      "Água utilizada na produção de bens e alimentos",
-      "Água encontrada apenas no espaço"
-    ],
-    answer: 2
-  },
-  {
-    level: "Médio",
-    topic: "Conservação",
-    question: "Qual prática pode reduzir o consumo de água em uma residência?",
-    options: [
-      "Reutilizar água quando apropriado",
-      "Deixar mangueira aberta",
-      "Lavar roupa com pouca carga",
-      "Ignorar vazamentos"
-    ],
-    answer: 0
-  },
+  {level:"Médio",topic:"Ciclo da água",question:"O que acontece na condensação?",options:["Vapor transforma-se em líquido","Gelo vira vapor","Água desaparece","Líquido vira sólido"],answer:0},
+  {level:"Médio",topic:"Ciclo da água",question:"Qual é o papel da vegetação no ciclo da água?",options:["Impedir a chuva","Contribuir para a evapotranspiração","Eliminar rios","Transformar água em petróleo"],answer:1},
+  {level:"Médio",topic:"Água subterrânea",question:"Onde parte da água da chuva pode ficar armazenada?",options:["Somente nas nuvens","Dentro do Sol","Nos aquíferos","No espaço"],answer:2},
+  {level:"Médio",topic:"Tratamento",question:"Qual processo remove partículas sólidas da água?",options:["Filtração","Combustão","Fermentação","Evaporação"],answer:0},
+  {level:"Médio",topic:"Recursos hídricos",question:"O que é uma bacia hidrográfica?",options:["Uma piscina","Área drenada por um rio e seus afluentes","Uma estação de tratamento","Um reservatório salgado"],answer:1},
+  {level:"Médio",topic:"Poluição",question:"O excesso de fertilizantes em rios pode provocar:",options:["Potabilidade","Desaparecimento da água","Eutrofização","Congelamento"],answer:2},
+  {level:"Médio",topic:"Conservação",question:"Por que a vegetação às margens dos rios é importante?",options:["Protege o solo e reduz erosão","Aumenta o lixo","Impede a vida aquática","Aumenta salinidade"],answer:0},
+  {level:"Médio",topic:"Água potável",question:"Por que água transparente não é necessariamente potável?",options:["Pode conter microrganismos ou substâncias invisíveis","Toda água transparente é salgada","Transparência significa congelamento","Não contém oxigênio"],answer:0},
+  {level:"Médio",topic:"Consumo",question:"O que é água virtual?",options:["Água criada por computador","Água invisível","Água utilizada na produção de bens e alimentos","Água espacial"],answer:2},
+  {level:"Médio",topic:"Conservação",question:"Qual prática reduz o consumo de água em casa?",options:["Reutilizar água quando apropriado","Deixar a mangueira aberta","Lavar roupa com pouca carga","Ignorar vazamentos"],answer:0},
 
-  {
-    level: "Difícil",
-    topic: "Água virtual",
-    question: "Por que a produção de carne pode apresentar elevado consumo de água virtual?",
-    options: [
-      "Porque os animais não bebem água",
-      "Porque envolve água para criação e produção de alimentos",
-      "Porque a carne é feita de água pura",
-      "Porque não utiliza agricultura"
-    ],
-    answer: 1
-  },
-  {
-    level: "Difícil",
-    topic: "Poluição",
-    question: "O que pode ocorrer quando há excesso de nutrientes em um lago?",
-    options: [
-      "Eutrofização e redução do oxigênio dissolvido",
-      "Aumento permanente da potabilidade",
-      "Eliminação de todas as algas",
-      "Congelamento do lago"
-    ],
-    answer: 0
-  },
-  {
-    level: "Difícil",
-    topic: "Saneamento",
-    question: "Qual é uma consequência possível do despejo de esgoto sem tratamento?",
-    options: [
-      "Melhoria da biodiversidade",
-      "Redução de doenças",
-      "Contaminação da água e riscos à saúde",
-      "Aumento da água potável"
-    ],
-    answer: 2
-  },
-  {
-    level: "Difícil",
-    topic: "Ciclo da água",
-    question: "Como o desmatamento pode afetar o ciclo da água?",
-    options: [
-      "Pode reduzir a evapotranspiração e alterar o regime de chuvas",
-      "Não interfere em nenhum processo",
-      "Transforma toda água em gelo",
-      "Elimina a evaporação dos oceanos"
-    ],
-    answer: 0
-  },
-  {
-    level: "Difícil",
-    topic: "Água subterrânea",
-    question: "O que pode comprometer a qualidade dos aquíferos?",
-    options: [
-      "Proteção das áreas de recarga",
-      "Contaminação por produtos químicos",
-      "Plantio de árvores",
-      "Uso racional da água"
-    ],
-    answer: 1
-  },
-  {
-    level: "Difícil",
-    topic: "Consumo",
-    question: "O conceito de pegada hídrica considera:",
-    options: [
-      "Somente a água usada para beber",
-      "Somente a água das chuvas",
-      "A água direta e indireta associada a produtos e atividades",
-      "Somente água de rios"
-    ],
-    answer: 2
-  },
-  {
-    level: "Difícil",
-    topic: "Conservação",
-    question: "Por que a impermeabilização do solo urbano pode aumentar enchentes?",
-    options: [
-      "Porque reduz a infiltração da água no solo",
-      "Porque aumenta a evaporação em 100%",
-      "Porque elimina todos os rios",
-      "Porque transforma água em gás"
-    ],
-    answer: 0
-  },
-  {
-    level: "Difícil",
-    topic: "Poluição",
-    question: "O que é bioacumulação?",
-    options: [
-      "Redução de água nos oceanos",
-      "Acúmulo de substâncias contaminantes nos organismos",
-      "Filtração de água em rochas",
-      "Produção de água potável"
-    ],
-    answer: 1
-  },
-  {
-    level: "Difícil",
-    topic: "Tratamento",
-    question: "Por que a desinfecção é uma etapa importante no tratamento de água?",
-    options: [
-      "Para aumentar a quantidade de areia",
-      "Para eliminar ou inativar microrganismos patogênicos",
-      "Para tornar a água salgada",
-      "Para aumentar a turbidez"
-    ],
-    answer: 1
-  },
-  {
-    level: "Difícil",
-    topic: "Recursos hídricos",
-    question: "O que significa uso sustentável da água?",
-    options: [
-      "Utilizar toda a água disponível",
-      "Usar água sem planejamento",
-      "Atender às necessidades atuais sem comprometer sua disponibilidade futura",
-      "Evitar qualquer uso da água"
-    ],
-    answer: 2
-  }
+  {level:"Difícil",topic:"Água virtual",question:"Por que a produção de carne pode apresentar elevado consumo de água virtual?",options:["Animais não bebem água","Envolve criação e produção de alimentos para animais","Carne é feita de água pura","Não utiliza agricultura"],answer:1},
+  {level:"Difícil",topic:"Poluição",question:"O que pode ocorrer com excesso de nutrientes em um lago?",options:["Eutrofização e redução do oxigênio dissolvido","Aumento permanente da potabilidade","Eliminação de todas as algas","Congelamento"],answer:0},
+  {level:"Difícil",topic:"Saneamento",question:"Qual consequência do despejo de esgoto sem tratamento?",options:["Melhoria da biodiversidade","Redução de doenças","Contaminação da água e riscos à saúde","Aumento de água potável"],answer:2},
+  {level:"Difícil",topic:"Ciclo da água",question:"Como o desmatamento pode afetar o ciclo da água?",options:["Reduz evapotranspiração e pode alterar chuvas","Não interfere","Transforma água em gelo","Elimina evaporação dos oceanos"],answer:0},
+  {level:"Difícil",topic:"Água subterrânea",question:"O que pode comprometer a qualidade dos aquíferos?",options:["Proteção das áreas de recarga","Contaminação por produtos químicos","Plantio de árvores","Uso racional"],answer:1},
+  {level:"Difícil",topic:"Consumo",question:"O conceito de pegada hídrica considera:",options:["Somente água para beber","Somente chuva","Água direta e indireta associada a produtos e atividades","Somente água de rios"],answer:2},
+  {level:"Difícil",topic:"Conservação",question:"Por que a impermeabilização do solo urbano pode aumentar enchentes?",options:["Reduz infiltração no solo","Aumenta evaporação em 100%","Elimina rios","Transforma água em gás"],answer:0},
+  {level:"Difícil",topic:"Poluição",question:"O que é bioacumulação?",options:["Redução da água dos oceanos","Acúmulo de contaminantes nos organismos","Filtração de água em rochas","Produção de água potável"],answer:1},
+  {level:"Difícil",topic:"Tratamento",question:"Por que a desinfecção é importante no tratamento da água?",options:["Aumenta areia","Inativa microrganismos patogênicos","Torna água salgada","Aumenta turbidez"],answer:1},
+  {level:"Difícil",topic:"Recursos hídricos",question:"O que significa uso sustentável da água?",options:["Utilizar toda água disponível","Usar sem planejamento","Atender necessidades atuais sem comprometer o futuro","Evitar qualquer uso"],answer:2}
 ];
 
-// ---------------------------
-// UTILS
-// ---------------------------
+// =========================================================
+// UTILITÁRIOS
+// =========================================================
 
-function showScreen(screenId) {
-  document.querySelectorAll(".screen").forEach(screen => {
-    screen.classList.add("hidden");
-  });
-
-  $(screenId)?.classList.remove("hidden");
+function $(id) {
+  return document.getElementById(id);
 }
 
-function showMessage(elementId, message, type = "") {
-  const el = $(elementId);
-  if (!el) return;
-
-  el.textContent = message;
-  el.className = "message";
-
-  if (type) el.classList.add(type);
+function createFleet() {
+  return FLEET_SIZES.map(size => ({
+    size,
+    cells: []
+  }));
 }
 
-function generateRoomCode() {
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.add("hidden"));
+  $(id)?.classList.remove("hidden");
+}
+
+function message(id, text) {
+  const el = $(id);
+  if (el) el.textContent = text;
+}
+
+function makeCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-
-  for (let i = 0; i < 5; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-
-  return code;
+  return Array.from({length:5}, () =>
+    chars[Math.floor(Math.random() * chars.length)]
+  ).join("");
 }
 
-function shuffle(array) {
-  return [...array].sort(() => Math.random() - 0.5);
+function getMe(room = currentRoom) {
+  return room?.players?.find(p => p.uid === currentUser?.uid);
 }
 
-function getOpponent(room) {
-  return room.players.find(player => player.uid !== currentUser.uid);
-}
-
-function getMyPlayer(room) {
-  return room.players.find(player => player.uid === currentUser.uid);
-}
-
-function cellsToKey(cells) {
-  return cells.map(c => `${c.row}-${c.col}`);
-}
-
-function isCellOccupied(cells, row, col) {
-  return cells.some(c => c.row === row && c.col === col);
+function getOpponent(room = currentRoom) {
+  return room?.players?.find(p => p.uid !== currentUser?.uid);
 }
 
 function allShipsPlaced() {
-  return ships.every(ship => ship.cells.length === ship.size);
+  return ships.every(s => s.cells.length === s.size);
 }
 
-function getAllShipCells() {
-  return ships.flatMap(ship => ship.cells);
+function allShipCells() {
+  return ships.flatMap(s => s.cells);
 }
 
-// ---------------------------
-// AUTH
-// ---------------------------
+function occupied(cells, row, col) {
+  return cells.some(c => c.row === row && c.col === col);
+}
+
+function cellKey(row, col) {
+  return `${row}-${col}`;
+}
+
+function randomItem(array) {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function shuffle(array) {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function safeText(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+// =========================================================
+// AUTHENTICAÇÃO
+// =========================================================
 
 auth.signInAnonymously()
   .then(result => {
     currentUser = result.user;
-    console.log("Firebase conectado:", currentUser.uid);
+    console.log("Firebase conectado. UID:", currentUser.uid);
   })
   .catch(error => {
-    console.error("Erro Firebase Auth:", error);
-    alert("Erro ao conectar. Verifique a configuração do Firebase.");
+    console.error("Erro de autenticação:", error);
+    message("homeMessage", "Não foi possível conectar ao Firebase.");
   });
 
-// ---------------------------
-// CREATE ROOM
-// ---------------------------
+// =========================================================
+// CRIAR SALA
+// =========================================================
 
 $("createRoomBtn")?.addEventListener("click", async () => {
   if (!currentUser) {
-    showMessage("homeMessage", "Conectando ao Firebase...");
+    message("homeMessage", "Aguarde a conexão com o Firebase...");
     return;
   }
 
-  const name = $("playerName").value.trim();
+  const name = $("playerName")?.value.trim();
 
   if (!name) {
-    showMessage("homeMessage", "Digite seu nome.");
+    message("homeMessage", "Digite seu nome.");
     return;
   }
 
-  const roomCode = generateRoomCode();
+  const code = makeCode();
 
   const room = {
-    code: roomCode,
+    code,
     status: "waiting",
-    players: [
-      {
-        uid: currentUser.uid,
-        name: name,
-        ready: false,
-        hits: 0,
-        shots: 0
-      }
-    ],
+    players: [{
+      uid: currentUser.uid,
+      name,
+      ready: false,
+      hits: 0,
+      shots: 0
+    }],
     turn: null,
     shots: [],
     askedQuestions: [],
@@ -485,193 +205,199 @@ $("createRoomBtn")?.addEventListener("click", async () => {
   };
 
   try {
-    await db.collection("rooms").doc(roomCode).set(room);
-
-    currentRoomId = roomCode;
+    await db.collection("rooms").doc(code).set(room);
+    currentRoomId = code;
     showScreen("lobbyScreen");
-    listenToRoom(roomCode);
+    subscribeRoom(code);
   } catch (error) {
     console.error(error);
-    showMessage("homeMessage", "Não foi possível criar a sala.");
+    message("homeMessage", "Erro ao criar sala. Confira o Firebase.");
   }
 });
 
-// ---------------------------
-// JOIN ROOM
-// ---------------------------
+// =========================================================
+// ENTRAR NA SALA
+// =========================================================
 
 $("joinRoomBtn")?.addEventListener("click", async () => {
   if (!currentUser) {
-    showMessage("homeMessage", "Conectando ao Firebase...");
+    message("homeMessage", "Aguarde a conexão...");
     return;
   }
 
-  const name = $("playerName").value.trim();
-  const roomCode = $("roomCodeInput").value.trim().toUpperCase();
+  const name = $("playerName")?.value.trim();
+  const code = $("roomCodeInput")?.value.trim().toUpperCase();
 
-  if (!name || !roomCode) {
-    showMessage("homeMessage", "Digite seu nome e o código da sala.");
+  if (!name || !code) {
+    message("homeMessage", "Digite seu nome e o código da sala.");
     return;
   }
 
-  const roomRef = db.collection("rooms").doc(roomCode);
+  const ref = db.collection("rooms").doc(code);
 
   try {
-    const snapshot = await roomRef.get();
+    await db.runTransaction(async transaction => {
+      const snap = await transaction.get(ref);
 
-    if (!snapshot.exists) {
-      showMessage("homeMessage", "Sala não encontrada.");
-      return;
-    }
+      if (!snap.exists) throw new Error("Sala não encontrada.");
 
-    const room = snapshot.data();
+      const room = snap.data();
 
-    if (room.players.length >= 2) {
-      showMessage("homeMessage", "Esta sala já está cheia.");
-      return;
-    }
+      if (room.players.some(p => p.uid === currentUser.uid)) {
+        return;
+      }
 
-    if (room.players.some(p => p.uid === currentUser.uid)) {
-      currentRoomId = roomCode;
-      showScreen("lobbyScreen");
-      listenToRoom(roomCode);
-      return;
-    }
+      if (room.players.length >= 2) {
+        throw new Error("Sala cheia.");
+      }
 
-    const players = [...room.players, {
-      uid: currentUser.uid,
-      name: name,
-      ready: false,
-      hits: 0,
-      shots: 0
-    }];
+      if (room.status !== "waiting") {
+        throw new Error("Esta partida já começou.");
+      }
 
-    await roomRef.update({
-      players: players,
-      status: "setup"
+      transaction.update(ref, {
+        players: [...room.players, {
+          uid: currentUser.uid,
+          name,
+          ready: false,
+          hits: 0,
+          shots: 0
+        }],
+        status: "setup"
+      });
     });
 
-    currentRoomId = roomCode;
+    currentRoomId = code;
     showScreen("lobbyScreen");
-    listenToRoom(roomCode);
+    subscribeRoom(code);
 
   } catch (error) {
     console.error(error);
-    showMessage("homeMessage", "Erro ao entrar na sala.");
+    message("homeMessage", error.message || "Erro ao entrar na sala.");
   }
 });
 
-// ---------------------------
-// ROOM LISTENER
-// ---------------------------
+// =========================================================
+// OBSERVAR SALA
+// =========================================================
 
-function listenToRoom(roomCode) {
+function subscribeRoom(code) {
   if (roomUnsubscribe) roomUnsubscribe();
 
   roomUnsubscribe = db.collection("rooms")
-    .doc(roomCode)
+    .doc(code)
     .onSnapshot(snapshot => {
-      if (!snapshot.exists) return;
+      if (!snapshot.exists) {
+        message("lobbyStatus", "A sala não existe mais.");
+        return;
+      }
 
       currentRoom = snapshot.data();
       renderRoom(currentRoom);
+    }, error => {
+      console.error("Erro ao observar sala:", error);
     });
 }
 
 function renderRoom(room) {
-  $("roomCodeDisplay").textContent = room.code;
+  if ($("roomCodeDisplay")) {
+    $("roomCodeDisplay").textContent = room.code;
+  }
 
-  const playersList = $("playersList");
-  playersList.innerHTML = "";
+  const list = $("playersList");
+  if (list) {
+    list.innerHTML = "";
 
-  room.players.forEach((player, index) => {
-    const item = document.createElement("div");
-    item.className = "player-item";
+    room.players.forEach(player => {
+      const item = document.createElement("div");
+      item.className = "player-item";
 
-    item.innerHTML = `
-      <span>🌊 ${player.name}</span>
-      <span>${player.ready ? "✅ Pronto" : "⏳ Aguardando"}</span>
-    `;
+      const name = document.createElement("span");
+      name.textContent = "🌊 " + player.name;
 
-    playersList.appendChild(item);
-  });
+      const status = document.createElement("span");
+      status.textContent = player.ready ? "✅ Pronto" : "⏳ Aguardando";
+
+      item.append(name, status);
+      list.appendChild(item);
+    });
+  }
 
   if (room.players.length < 2) {
-    $("lobbyStatus").textContent = "Esperando outro jogador entrar...";
+    message("lobbyStatus", "Esperando outro jogador entrar...");
     showScreen("lobbyScreen");
     return;
   }
 
   if (room.status === "setup") {
-    const me = getMyPlayer(room);
+    const me = getMe(room);
 
     if (me?.ready) {
-      $("lobbyStatus").textContent = "Você já posicionou sua frota. Esperando o adversário...";
+      message("lobbyStatus", "Frota confirmada. Aguardando o adversário...");
       showScreen("lobbyScreen");
     } else {
-      showSetup();
+      renderSetup();
     }
-
     return;
   }
 
   if (room.status === "playing") {
-    showGame(room);
+    renderGame(room);
     return;
   }
 
   if (room.status === "finished") {
-    showEnd(room);
+    renderEnd(room);
   }
 }
 
-// ---------------------------
-// LOBBY
-// ---------------------------
+// =========================================================
+// COPIAR CÓDIGO
+// =========================================================
 
 $("copyCodeBtn")?.addEventListener("click", async () => {
   if (!currentRoomId) return;
 
   try {
     await navigator.clipboard.writeText(currentRoomId);
-    $("copyCodeBtn").textContent = "Copiado!";
-    setTimeout(() => {
-      $("copyCodeBtn").textContent = "Copiar código";
-    }, 1500);
+    const btn = $("copyCodeBtn");
+    if (btn) {
+      const old = btn.textContent;
+      btn.textContent = "Copiado!";
+      setTimeout(() => btn.textContent = old, 1500);
+    }
   } catch {
     alert("Código da sala: " + currentRoomId);
   }
 });
 
-// ---------------------------
-// SHIP PLACEMENT
-// ---------------------------
+// =========================================================
+// POSICIONAMENTO DA FROTA
+// =========================================================
 
-function showSetup() {
+function renderSetup() {
   showScreen("setupScreen");
-  renderFleetStatus();
   renderSetupBoard();
+  renderFleet();
 }
 
-function renderFleetStatus() {
+function renderFleet() {
   const ids = ["ship3Status", "ship2aStatus", "ship2bStatus"];
 
   ships.forEach((ship, index) => {
     const el = $(ids[index]);
     if (!el) return;
 
-    el.classList.toggle("placed", ship.cells.length === ship.size);
-
-    if (ship.cells.length === ship.size) {
-      el.textContent = `${ship.name} ✓`;
-    } else {
-      el.textContent = `${ship.name} (${ship.size} casas)`;
-    }
+    const placed = ship.cells.length === ship.size;
+    el.classList.toggle("placed", placed);
+    el.textContent = placed
+      ? `Barco ${ship.size} casas ✓`
+      : `Barco ${ship.size} casas`;
   });
 
-  selectedShipIndex = ships.findIndex(ship => ship.cells.length === 0);
-
-  $("confirmShipsBtn").disabled = !allShipsPlaced();
+  if ($("confirmShipsBtn")) {
+    $("confirmShipsBtn").disabled = !allShipsPlaced();
+  }
 }
 
 function renderSetupBoard() {
@@ -679,185 +405,194 @@ function renderSetupBoard() {
   if (!board) return;
 
   board.innerHTML = "";
-  board.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 1fr)`;
+  board.style.gridTemplateColumns = `repeat(${BOARD_SIZE},1fr)`;
 
-  const occupied = getAllShipCells();
+  const cells = allShipCells();
 
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
-      const cell = document.createElement("button");
-      cell.className = "cell";
-      cell.dataset.row = row;
-      cell.dataset.col = col;
+      const button = document.createElement("button");
+      button.className = "cell";
+      button.dataset.row = row;
+      button.dataset.col = col;
 
-      if (isCellOccupied(occupied, row, col)) {
-        cell.classList.add("ship-cell");
-        cell.textContent = "🚢";
+      if (occupied(cells, row, col)) {
+        button.classList.add("ship-cell");
+        button.textContent = "🚢";
       }
 
-      cell.addEventListener("click", () => placeShip(row, col));
-
-      board.appendChild(cell);
+      button.addEventListener("click", () => placeShip(row, col));
+      board.appendChild(button);
     }
   }
 
-  renderFleetStatus();
+  renderFleet();
 }
 
 function placeShip(row, col) {
-  if (selectedShipIndex < 0) {
-    showMessage("setupMessage", "Todos os barcos já foram posicionados.");
+  const index = ships.findIndex(ship => ship.cells.length === 0);
+
+  if (index === -1) {
+    message("setupMessage", "Todos os barcos já estão posicionados.");
     return;
   }
 
-  const ship = ships[selectedShipIndex];
-
-  let newCells = [];
+  const ship = ships[index];
+  const newCells = [];
 
   for (let i = 0; i < ship.size; i++) {
     const r = orientation === "vertical" ? row + i : row;
     const c = orientation === "horizontal" ? col + i : col;
 
     if (r >= BOARD_SIZE || c >= BOARD_SIZE) {
-      showMessage("setupMessage", "O barco não cabe nessa posição.");
+      message("setupMessage", "O barco não cabe nessa posição.");
       return;
     }
 
-    newCells.push({ row: r, col: c });
+    newCells.push({row:r, col:c});
   }
 
-  const occupied = getAllShipCells();
+  const alreadyPlaced = allShipCells();
 
-  if (newCells.some(cell => isCellOccupied(occupied, cell.row, cell.col))) {
-    showMessage("setupMessage", "Os barcos não podem ocupar a mesma casa.");
+  if (newCells.some(c => occupied(alreadyPlaced, c.row, c.col))) {
+    message("setupMessage", "Os barcos não podem se sobrepor.");
     return;
   }
 
   ship.cells = newCells;
-
-  selectedShipIndex = ships.findIndex(s => s.cells.length === 0);
-
-  showMessage("setupMessage", "Barco posicionado! Continue com o próximo.");
-
+  message("setupMessage", "Barco posicionado! Posicione o próximo.");
   renderSetupBoard();
 }
 
 $("rotateShipBtn")?.addEventListener("click", () => {
   orientation = orientation === "horizontal" ? "vertical" : "horizontal";
 
-  $("rotateShipBtn").textContent =
-    orientation === "horizontal" ? "↔ Horizontal" : "↕ Vertical";
+  const btn = $("rotateShipBtn");
+  if (btn) {
+    btn.textContent = orientation === "horizontal"
+      ? "↔ Horizontal"
+      : "↕ Vertical";
+  }
 
-  showMessage("setupMessage", `Orientação: ${orientation}`);
+  message("setupMessage", `Orientação: ${orientation}`);
 });
 
 $("randomShipsBtn")?.addEventListener("click", () => {
-  ships.forEach(ship => ship.cells = []);
+  ships = createFleet();
 
   for (const ship of ships) {
     let placed = false;
     let attempts = 0;
 
-    while (!placed && attempts < 500) {
+    while (!placed && attempts < 1000) {
       attempts++;
 
       const dir = Math.random() < 0.5 ? "horizontal" : "vertical";
       const row = Math.floor(Math.random() * BOARD_SIZE);
       const col = Math.floor(Math.random() * BOARD_SIZE);
 
-      const cells = [];
+      const candidate = [];
 
       for (let i = 0; i < ship.size; i++) {
         const r = dir === "vertical" ? row + i : row;
         const c = dir === "horizontal" ? col + i : col;
 
         if (r >= BOARD_SIZE || c >= BOARD_SIZE) break;
-        cells.push({ row: r, col: c });
+        candidate.push({row:r, col:c});
       }
 
-      if (cells.length !== ship.size) continue;
+      if (candidate.length !== ship.size) continue;
 
-      const occupied = getAllShipCells();
-
-      if (cells.some(cell => isCellOccupied(occupied, cell.row, cell.col))) {
+      if (candidate.some(c => occupied(allShipCells(), c.row, c.col))) {
         continue;
       }
 
-      ship.cells = cells;
+      ship.cells = candidate;
       placed = true;
     }
   }
 
-  showMessage("setupMessage", "Frota sorteada! Você pode confirmar ou sortear novamente.");
+  message("setupMessage", "Frota sorteada! Confirme ou sorteie novamente.");
   renderSetupBoard();
 });
 
+// =========================================================
+// CONFIRMAR FROTA
+// =========================================================
+
 $("confirmShipsBtn")?.addEventListener("click", async () => {
-  if (!allShipsPlaced() || !currentRoomId) return;
+  if (!allShipsPlaced() || !currentRoomId || !currentUser) return;
 
   try {
     const roomRef = db.collection("rooms").doc(currentRoomId);
     const privateRef = roomRef.collection("privateBoards").doc(currentUser.uid);
 
-    // Guarda o tabuleiro do jogador.
     await privateRef.set({
       uid: currentUser.uid,
       ships: ships.map(ship => ship.cells),
-      confirmed: true
+      confirmed: true,
+      updatedAt: Date.now()
     });
 
-    const roomSnap = await roomRef.get();
-    const room = roomSnap.data();
+    await db.runTransaction(async transaction => {
+      const snap = await transaction.get(roomRef);
+      if (!snap.exists) throw new Error("Sala não encontrada.");
 
-    const players = room.players.map(player => {
-      if (player.uid === currentUser.uid) {
-        return { ...player, ready: true };
-      }
-      return player;
+      const room = snap.data();
+
+      const players = room.players.map(player =>
+        player.uid === currentUser.uid
+          ? {...player, ready:true}
+          : player
+      );
+
+      const allReady = players.length === 2 &&
+        players.every(player => player.ready);
+
+      transaction.update(roomRef, {
+        players,
+        status: allReady ? "playing" : "setup",
+        turn: allReady ? players[0].uid : null
+      });
     });
 
-    const allReady = players.length === 2 && players.every(player => player.ready);
-
-    await roomRef.update({
-      players,
-      status: allReady ? "playing" : "setup",
-      turn: allReady ? players[0].uid : null
-    });
-
-    showMessage("setupMessage", "Frota confirmada!");
+    message("setupMessage", "Frota confirmada!");
 
   } catch (error) {
     console.error(error);
-    showMessage("setupMessage", "Erro ao confirmar frota.");
+    message("setupMessage", "Erro ao confirmar frota.");
   }
 });
 
-// ---------------------------
-// GAME
-// ---------------------------
+// =========================================================
+// TABULEIROS DURANTE A PARTIDA
+// =========================================================
 
-function showGame(room) {
+function renderGame(room) {
   showScreen("gameScreen");
 
-  const me = getMyPlayer(room);
+  const me = getMe(room);
   const opponent = getOpponent(room);
-
   if (!me || !opponent) return;
 
   const myTurn = room.turn === currentUser.uid;
 
-  $("turnMessage").textContent = myTurn
-    ? "🎯 Sua vez!"
-    : `⏳ Vez de ${opponent.name}`;
+  if ($("turnMessage")) {
+    $("turnMessage").textContent = myTurn
+      ? "🎯 Sua vez!"
+      : `⏳ Vez de ${opponent.name}`;
+  }
 
-  $("gameStatus").textContent = `${me.name} × ${opponent.name}`;
+  if ($("gameStatus")) {
+    $("gameStatus").textContent = `${me.name} × ${opponent.name}`;
+  }
 
   renderMyBoard(room);
   renderEnemyBoard(room);
 
   if (currentQuestion && !answered) {
     renderQuestion();
-  } else {
+  } else if ($("questionArea")) {
     $("questionArea").classList.add("hidden");
   }
 }
@@ -867,41 +602,35 @@ async function renderMyBoard(room) {
   if (!board) return;
 
   board.innerHTML = "";
-  board.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 1fr)`;
+  board.style.gridTemplateColumns = `repeat(${BOARD_SIZE},1fr)`;
 
   let myShips = [];
 
   try {
-    const snapshot = await db.collection("rooms")
+    const snap = await db.collection("rooms")
       .doc(currentRoomId)
       .collection("privateBoards")
       .doc(currentUser.uid)
       .get();
 
-    if (snapshot.exists) {
-      myShips = snapshot.data().ships.flat();
-    }
-  } catch (e) {
-    console.error(e);
+    if (snap.exists) myShips = snap.data().ships.flat();
+  } catch (error) {
+    console.error(error);
   }
 
-  const myShipKeys = new Set(cellsToKey(myShips));
+  const shipKeys = new Set(myShips.map(c => cellKey(c.row,c.col)));
 
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
       const cell = document.createElement("div");
       cell.className = "cell";
 
-      const key = `${row}-${col}`;
+      const key = cellKey(row,col);
+      if (shipKeys.has(key)) cell.classList.add("ship-cell");
 
-      if (myShipKeys.has(key)) {
-        cell.classList.add("ship-cell");
-      }
-
-      const shot = room.shots.find(s =>
+      const shot = room.shots?.find(s =>
         s.targetUid === currentUser.uid &&
-        s.row === row &&
-        s.col === col
+        s.row === row && s.col === col
       );
 
       if (shot) {
@@ -919,7 +648,7 @@ function renderEnemyBoard(room) {
   if (!board) return;
 
   board.innerHTML = "";
-  board.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 1fr)`;
+  board.style.gridTemplateColumns = `repeat(${BOARD_SIZE},1fr)`;
 
   const opponent = getOpponent(room);
   if (!opponent) return;
@@ -928,123 +657,120 @@ function renderEnemyBoard(room) {
 
   for (let row = 0; row < BOARD_SIZE; row++) {
     for (let col = 0; col < BOARD_SIZE; col++) {
-      const cell = document.createElement("button");
-      cell.className = "cell enemy-cell";
+      const button = document.createElement("button");
+      button.className = "cell enemy-cell";
 
-      const shot = room.shots.find(s =>
+      const shot = room.shots?.find(s =>
         s.targetUid === opponent.uid &&
-        s.row === row &&
-        s.col === col
+        s.row === row && s.col === col
       );
 
       if (shot) {
-        cell.classList.add(shot.hit ? "hit-cell" : "miss-cell");
-        cell.textContent = shot.hit ? "💥" : "•";
-        cell.disabled = true;
+        button.classList.add(shot.hit ? "hit-cell" : "miss-cell");
+        button.textContent = shot.hit ? "💥" : "•";
+        button.disabled = true;
       } else {
-        cell.textContent = "🌊";
-        cell.disabled = !myTurn;
+        button.textContent = "🌊";
+        button.disabled = !myTurn || !!selectedAttack;
 
-        cell.addEventListener("click", () => {
+        button.addEventListener("click", () => {
           if (!myTurn || selectedAttack) return;
-          selectedAttack = { row, col };
-          startQuestion();
+          selectedAttack = {row,col};
+          beginQuestion();
         });
       }
 
-      board.appendChild(cell);
+      board.appendChild(button);
     }
   }
 }
 
-// ---------------------------
-// QUESTIONS
-// ---------------------------
+// =========================================================
+// SISTEMA DE PERGUNTAS
+// =========================================================
 
-function startQuestion() {
-  if (!selectedAttack) return;
+function beginQuestion() {
+  if (!selectedAttack || !currentRoom) return;
 
-  const room = currentRoom;
-  if (!room) return;
+  const used = currentRoom.askedQuestions || [];
+  const available = QUESTIONS.filter(q => !used.includes(q.question));
 
-  const available = QUESTIONS.filter(q =>
-    !room.askedQuestions?.includes(q.question)
-  );
-
-  const pool = available.length ? available : QUESTIONS;
-
-  currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+  currentQuestion = randomItem(available.length ? available : QUESTIONS);
   answered = false;
 
-  $("questionArea").classList.remove("hidden");
   renderQuestion();
 }
 
 function renderQuestion() {
   if (!currentQuestion) return;
 
-  $("questionLevel").textContent = currentQuestion.level;
-  $("questionText").textContent = currentQuestion.question;
+  if ($("questionLevel")) {
+    $("questionLevel").textContent = currentQuestion.level;
+  }
+
+  if ($("questionText")) {
+    $("questionText").textContent = currentQuestion.question;
+  }
 
   const options = $("answerOptions");
+  if (!options) return;
+
   options.innerHTML = "";
 
-  currentQuestion.options.forEach((option, index) => {
+  currentQuestion.options.forEach((option,index) => {
     const button = document.createElement("button");
     button.className = "answer-btn";
     button.textContent = option;
-
-    button.addEventListener("click", () => answerQuestion(index));
-
+    button.addEventListener("click", () => submitAnswer(index));
     options.appendChild(button);
   });
 
-  $("answerFeedback").textContent = "";
-  $("questionArea").classList.remove("hidden");
+  if ($("answerFeedback")) $("answerFeedback").textContent = "";
+  $("questionArea")?.classList.remove("hidden");
 }
 
-async function answerQuestion(selectedIndex) {
+async function submitAnswer(index) {
   if (answered || !currentQuestion || !selectedAttack) return;
 
   answered = true;
 
-  const isCorrect = selectedIndex === currentQuestion.answer;
+  const correct = index === currentQuestion.answer;
 
-  const buttons = document.querySelectorAll(".answer-btn");
-
-  buttons.forEach((button, index) => {
+  document.querySelectorAll(".answer-btn").forEach((button,i) => {
     button.disabled = true;
 
-    if (index === currentQuestion.answer) {
-      button.classList.add("correct");
-    } else if (index === selectedIndex && !isCorrect) {
-      button.classList.add("wrong");
-    }
+    if (i === currentQuestion.answer) button.classList.add("correct");
+    else if (i === index && !correct) button.classList.add("wrong");
   });
 
-  const feedback = $("answerFeedback");
-
-  feedback.textContent = isCorrect
-    ? "✅ Resposta correta! Você pode atacar!"
-    : `❌ Resposta incorreta. Resposta correta: ${currentQuestion.options[currentQuestion.answer]}`;
+  if ($("answerFeedback")) {
+    $("answerFeedback").textContent = correct
+      ? "✅ Resposta correta! Ataque liberado!"
+      : `❌ Incorreto! Resposta: ${currentQuestion.options[currentQuestion.answer]}`;
+  }
 
   try {
-    await processAnswer(selectedIndex, isCorrect);
+    await processTurn(index, correct);
   } catch (error) {
     console.error(error);
-    feedback.textContent += " Erro ao salvar a jogada.";
+    if ($("answerFeedback")) {
+      $("answerFeedback").textContent += " Não foi possível registrar a jogada.";
+    }
+    answered = false;
   }
 }
 
-// ---------------------------
-// PROCESS ANSWER + SHOT
-// ---------------------------
+// =========================================================
+// PROCESSAR ATAQUE
+// =========================================================
 
-async function processAnswer(selectedIndex, isCorrect) {
+async function processTurn(selectedIndex, correct) {
   const roomRef = db.collection("rooms").doc(currentRoomId);
 
-  const roomSnap = await roomRef.get();
-  const room = roomSnap.data();
+  const snap = await roomRef.get();
+  if (!snap.exists) throw new Error("Sala não encontrada.");
+
+  const room = snap.data();
 
   if (room.turn !== currentUser.uid) {
     selectedAttack = null;
@@ -1053,67 +779,59 @@ async function processAnswer(selectedIndex, isCorrect) {
   }
 
   const opponent = room.players.find(p => p.uid !== currentUser.uid);
-  if (!opponent) return;
+  if (!opponent) throw new Error("Adversário não encontrado.");
 
   let hit = false;
 
-  if (isCorrect) {
-    const opponentBoardSnap = await roomRef
+  // Consulta o tabuleiro adversário.
+  // IMPORTANTE: no Spark e com regras abertas, esta arquitetura
+  // não é segura contra jogadores que inspecionam o banco.
+  if (correct) {
+    const opponentSnap = await roomRef
       .collection("privateBoards")
       .doc(opponent.uid)
       .get();
 
-    const opponentShips = opponentBoardSnap.exists
-      ? opponentBoardSnap.data().ships.flat()
+    const opponentShips = opponentSnap.exists
+      ? opponentSnap.data().ships.flat()
       : [];
 
-    hit = isCellOccupied(
-      opponentShips,
-      selectedAttack.row,
-      selectedAttack.col
-    );
+    hit = occupied(opponentShips, selectedAttack.row, selectedAttack.col);
   }
 
-  const questionLog = {
+  const log = {
     uid: currentUser.uid,
-    playerName: getMyPlayer(room)?.name || "",
+    playerName: getMe(room)?.name || "",
     question: currentQuestion.question,
     topic: currentQuestion.topic,
     level: currentQuestion.level,
     options: currentQuestion.options,
     selectedAnswer: currentQuestion.options[selectedIndex],
     correctAnswer: currentQuestion.options[currentQuestion.answer],
-    correct: isCorrect,
+    correct,
     targetRow: selectedAttack.row,
     targetCol: selectedAttack.col,
-    shotMade: isCorrect,
-    hit: isCorrect ? hit : false,
+    shotMade: correct,
+    hit: correct && hit,
     timestamp: Date.now()
   };
 
-  const askedQuestions = [
-    ...(room.askedQuestions || []),
-    currentQuestion.question
-  ];
-
-  const questionLogs = [
-    ...(room.questionLogs || []),
-    questionLog
-  ];
-
+  const asked = [...(room.askedQuestions || []), currentQuestion.question];
+  const logs = [...(room.questionLogs || []), log];
   const shots = [...(room.shots || [])];
 
-  const updatedPlayers = room.players.map(player => {
+  const players = room.players.map(player => {
     if (player.uid !== currentUser.uid) return player;
 
     return {
       ...player,
-      shots: (player.shots || 0) + (isCorrect ? 1 : 0),
-      hits: (player.hits || 0) + (isCorrect && hit ? 1 : 0)
+      shots: (player.shots || 0) + (correct ? 1 : 0),
+      hits: (player.hits || 0) + (correct && hit ? 1 : 0)
     };
   });
 
-  if (isCorrect) {
+  // Acerto de resposta libera o ataque.
+  if (correct) {
     shots.push({
       shooterUid: currentUser.uid,
       targetUid: opponent.uid,
@@ -1124,45 +842,39 @@ async function processAnswer(selectedIndex, isCorrect) {
     });
   }
 
-  // Verifica vitória.
-  const opponentBoardSnap = await roomRef
+  // Verificar vitória.
+  const boardSnap = await roomRef
     .collection("privateBoards")
     .doc(opponent.uid)
     .get();
 
-  const opponentShips = opponentBoardSnap.exists
-    ? opponentBoardSnap.data().ships.flat()
+  const enemyCells = boardSnap.exists
+    ? boardSnap.data().ships.flat()
     : [];
 
-  const opponentShipKeys = new Set(cellsToKey(opponentShips));
-
-  const opponentHitKeys = new Set(
+  const enemyKeys = new Set(enemyCells.map(c => cellKey(c.row,c.col)));
+  const hitKeys = new Set(
     shots
       .filter(s => s.targetUid === opponent.uid && s.hit)
-      .map(s => `${s.row}-${s.col}`)
+      .map(s => cellKey(s.row,s.col))
   );
 
-  const totalOpponentShipCells = opponentShipKeys.size;
-  const totalHits = [...opponentHitKeys].filter(key =>
-    opponentShipKeys.has(key)
-  ).length;
+  const totalHits = [...hitKeys].filter(k => enemyKeys.has(k)).length;
+  const victory = enemyKeys.size > 0 && totalHits >= enemyKeys.size;
 
-  const gameWon = totalOpponentShipCells > 0 &&
-    totalHits >= totalOpponentShipCells;
-
-  const newTurn = isCorrect && !gameWon
+  const nextTurn = correct && !victory
     ? currentUser.uid
     : opponent.uid;
 
   await roomRef.update({
     shots,
-    players: updatedPlayers,
-    askedQuestions,
-    questionLogs,
-    turn: newTurn,
-    status: gameWon ? "finished" : "playing",
-    winner: gameWon ? currentUser.uid : null,
-    finishedAt: gameWon ? Date.now() : null
+    players,
+    askedQuestions: asked,
+    questionLogs: logs,
+    turn: nextTurn,
+    status: victory ? "finished" : "playing",
+    winner: victory ? currentUser.uid : null,
+    finishedAt: victory ? Date.now() : null
   });
 
   selectedAttack = null;
@@ -1170,28 +882,36 @@ async function processAnswer(selectedIndex, isCorrect) {
   answered = false;
 }
 
-// ---------------------------
-// END GAME
-// ---------------------------
+// =========================================================
+// FINAL DA PARTIDA
+// =========================================================
 
-function showEnd(room) {
+function renderEnd(room) {
   showScreen("endScreen");
 
   const winner = room.players.find(p => p.uid === room.winner);
 
-  $("winnerMessage").textContent = winner
-    ? `🏆 ${winner.name} venceu!`
-    : "Fim de jogo!";
+  if ($("winnerMessage")) {
+    $("winnerMessage").textContent = winner
+      ? `🏆 ${winner.name} venceu!`
+      : "Fim de jogo!";
+  }
 
-  $("finalMessage").textContent = "Parabéns! A batalha pela água chegou ao fim.";
+  if ($("finalMessage")) {
+    $("finalMessage").textContent =
+      "A batalha pela água chegou ao fim! Continue aprendendo e cuidando desse recurso.";
+  }
 }
 
 $("playAgainBtn")?.addEventListener("click", () => {
+  if (roomUnsubscribe) roomUnsubscribe();
   location.reload();
 });
 
-// ---------------------------
-// INITIAL UI
-// ---------------------------
+// =========================================================
+// INICIALIZAÇÃO
+// =========================================================
 
 showScreen("homeScreen");
+
+console.log("Batalha Naval - Cada Gota Conta carregado.");
