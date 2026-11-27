@@ -648,9 +648,7 @@ async function performAttack(selectedIndex, correct) {
 
     // Acertou a questão? Continua jogando.
     // Errou? Passa a vez.
-    const nextTurn = correct && !victory
-      ? user.uid
-      : opponent.uid;
+   const nextTurn = opponent.uid;
 
     const updates = {
       shots: shots,
