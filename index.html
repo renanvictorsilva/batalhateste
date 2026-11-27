@@ -1,168 +1,283 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Batalha contra o Cyberbullying</title>
+  <title>Batalha Naval - Cada Gota Conta</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="header">
-  <div class="brand">
-    <div class="logo">🛡️</div>
-    <div>
-      <h1>BATALHA CONTRA O CYBERBULLYING</h1>
-      <p>Respeito também se pratica online</p>
+  <!-- CABEÇALHO -->
+  <header class="header">
+    <div class="brand">
+      <div class="logo">💧</div>
+      <div>
+        <h1>BATALHA NAVAL</h1>
+        <p>CADA GOTA CONTA</p>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<main class="container">
+  <main class="container">
 
-  <!-- TELA INICIAL -->
-  <section id="homeScreen" class="screen">
-    <div class="card home-card">
+    <!-- TELA INICIAL -->
+    <section id="homeScreen" class="screen">
+      <div class="card home-card">
 
-      <div class="hero-icons">💬 🛡️ 📱</div>
+        <div class="hero-icons">
+          💧 🌊 🚢
+        </div>
 
-      <h2>Prepare-se para a batalha!</h2>
+        <h2>Prepare-se para a batalha!</h2>
 
-      <p class="intro">
-        Enfrente desafios sobre segurança digital, respeito,
-        empatia e cyberbullying. Responda às questões,
-        descubra as posições do adversário e conquiste a vitória!
-      </p>
+        <p class="intro">
+          A água é essencial para a vida! Enfrente desafios sobre
+          consumo, preservação, poluição e recursos hídricos.
+          Responda às questões, descubra os barcos do adversário
+          e conquiste a vitória!
+        </p>
 
-      <label for="playerName">Nome do jogador</label>
-      <input id="playerName" maxlength="15" placeholder="Digite seu nome">
+        <label for="playerName">Nome do jogador</label>
+        <input
+          id="playerName"
+          type="text"
+          maxlength="20"
+          placeholder="Digite seu nome"
+          autocomplete="off"
+        >
 
-      <button id="createRoomBtn" class="btn primary">
-        🛡️ Criar partida
-      </button>
-
-      <div class="separator">OU</div>
-
-      <label for="roomCodeInput">Código da partida</label>
-      <input id="roomCodeInput" maxlength="5"
-             placeholder="Digite o código da sala"
-             style="text-transform:uppercase">
-
-      <button id="joinRoomBtn" class="btn secondary">
-        🎮 Entrar na partida
-      </button>
-
-      <p id="homeMessage" class="message"></p>
-    </div>
-  </section>
-
-  <!-- SALA DE ESPERA -->
-  <section id="lobbyScreen" class="screen hidden">
-    <div class="card">
-
-      <h2>⏳ Sala de espera</h2>
-
-      <p>Compartilhe o código com outro jogador.</p>
-
-      <div class="room-code-box">
-        <span id="roomCodeDisplay">-----</span>
-        <button id="copyCodeBtn" class="btn small">
-          📋 Copiar
+        <button id="createRoomBtn" class="btn primary">
+          🌊 Criar partida
         </button>
+
+        <div class="separator">OU</div>
+
+        <label for="roomCodeInput">Código da partida</label>
+        <input
+          id="roomCodeInput"
+          type="text"
+          maxlength="5"
+          placeholder="DIGITE O CÓDIGO DA SALA"
+          autocomplete="off"
+          style="text-transform: uppercase"
+        >
+
+        <button id="joinRoomBtn" class="btn secondary">
+          🎮 Entrar na partida
+        </button>
+
+        <p id="homeMessage" class="message"></p>
+
+      </div>
+    </section>
+
+    <!-- SALA DE ESPERA -->
+    <section id="lobbyScreen" class="screen hidden">
+      <div class="card lobby-card">
+
+        <div class="water-icon">🌊</div>
+
+        <h2>Sala de espera</h2>
+
+        <p class="intro">
+          Convide outro jogador para participar da batalha!
+        </p>
+
+        <div class="room-code-box">
+          <p>CÓDIGO DA PARTIDA</p>
+          <span id="roomCodeDisplay">-----</span>
+
+          <button id="copyCodeBtn" class="btn small">
+            📋 Copiar código
+          </button>
+        </div>
+
+        <p id="lobbyStatus" class="message">
+          Aguardando outro jogador...
+        </p>
+
+        <h3>Jogadores conectados</h3>
+
+        <div id="playersList" class="players-list"></div>
+
+        <div class="lobby-info">
+          💧 A batalha começará quando os dois jogadores estiverem
+          conectados e com seus barcos posicionados.
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PREPARAÇÃO DOS BARCOS -->
+    <section id="setupScreen" class="screen hidden">
+      <div class="card setup-card">
+
+        <h2>🚢 Prepare sua frota</h2>
+
+        <p class="intro">
+          Posicione seus barcos estrategicamente no tabuleiro.
+          Escolha os locais e a orientação de cada embarcação.
+        </p>
+
+        <div class="fleet-status">
+          <div class="fleet-item" id="ship3Status">
+            🚢 Barco de 3 casas
+          </div>
+
+          <div class="fleet-item" id="ship2aStatus">
+            🚢 Barco de 2 casas
+          </div>
+
+          <div class="fleet-item" id="ship2bStatus">
+            🚢 Barco de 2 casas
+          </div>
+        </div>
+
+        <div class="setup-controls">
+          <button id="rotateShipBtn" class="btn secondary">
+            🔄 Girar barco
+          </button>
+
+          <button id="randomShipsBtn" class="btn primary">
+            🎲 Posicionar automaticamente
+          </button>
+        </div>
+
+        <p id="setupMessage" class="message">
+          Selecione um barco e escolha as posições no tabuleiro.
+        </p>
+
+        <div class="board-container">
+          <div id="setupBoard" class="board"></div>
+        </div>
+
+        <button id="confirmShipsBtn" class="btn primary" disabled>
+          ✅ Confirmar tabuleiro
+        </button>
+
+      </div>
+    </section>
+
+    <!-- TELA DO JOGO -->
+    <section id="gameScreen" class="screen hidden">
+
+      <div class="game-top card">
+
+        <div>
+          <h2>💧 Cada Gota Conta</h2>
+          <p id="turnMessage">Preparando batalha...</p>
+        </div>
+
+        <div id="gameStatus" class="status-badge">
+          Aguardando
+        </div>
+
       </div>
 
-      <p id="lobbyStatus" class="message">
-        Aguardando outro jogador...
-      </p>
+      <div id="gameMessage" class="game-message"></div>
 
-      <h3>Jogadores</h3>
-      <div id="playersList" class="players-list"></div>
+      <!-- TABULEIROS -->
+      <div class="boards">
 
-      <p class="hint">
-        A partida começará quando os dois jogadores entrarem.
-      </p>
-    </div>
-  </section>
+        <!-- MEU TABULEIRO -->
+        <div class="board-card card">
+
+          <h3>🛡️ Minha frota</h3>
+
+          <p class="board-subtitle">
+            Proteja seus barcos!
+          </p>
+
+          <div id="myBoard" class="board"></div>
+
+          <div class="legend">
+            <span>🚢 Barco</span>
+            <span>💥 Atingido</span>
+            <span>⭕ Água</span>
+          </div>
+
+        </div>
+
+        <!-- TABULEIRO ADVERSÁRIO -->
+        <div class="board-card card">
+
+          <h3>🎯 Tabuleiro adversário</h3>
+
+          <p class="board-subtitle">
+            Descubra as posições!
+          </p>
+
+          <div id="enemyBoard" class="board"></div>
+
+          <div class="legend">
+            <span>💥 Acerto</span>
+            <span>⭕ Erro</span>
+            <span>❓ Desconhecido</span>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- PERGUNTAS -->
+      <div id="questionArea" class="card question-card hidden">
+
+        <div class="question-header">
+
+          <span id="questionLevel" class="level-badge">
+            Nível
+          </span>
+
+          <span>💧 Desafio da Água</span>
+
+        </div>
+
+        <h3 id="questionText"></h3>
+
+        <div id="answerOptions" class="answer-options"></div>
+
+        <p id="answerFeedback" class="answer-feedback"></p>
+
+      </div>
+
+    </section>
+
+    <!-- TELA FINAL -->
+    <section id="endScreen" class="screen hidden">
+      <div class="card end-card">
+
+        <div class="end-icon">🏆</div>
+
+        <h2 id="winnerMessage">
+          Fim de jogo!
+        </h2>
+
+        <p id="finalMessage"></p>
+
+        <button id="playAgainBtn" class="btn primary">
+          🔄 Jogar novamente
+        </button>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- RODAPÉ -->
+  <footer>
+    <p>💧 Batalha Naval — Cada Gota Conta</p>
+    <p>Preservar a água é proteger a vida!</p>
+  </footer>
+
+  <!-- FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
   <!-- JOGO -->
-  <section id="gameScreen" class="screen hidden">
-
-    <div class="game-top card">
-      <div>
-        <h2>🛡️ Batalha Cyber</h2>
-        <p id="turnMessage">Preparando partida...</p>
-      </div>
-
-      <div id="gameStatus" class="status-badge">Aguardando</div>
-    </div>
-
-    <div class="game-message" id="gameMessage"></div>
-
-    <div class="boards">
-
-      <div class="board-card card">
-        <h3>🛡️ Meu tabuleiro</h3>
-        <p class="board-subtitle">Proteja seus navios!</p>
-        <div id="myBoard" class="board"></div>
-        <div class="legend">
-          <span>🟦 Navio</span>
-          <span>💥 Atingido</span>
-          <span>⬜ Água</span>
-        </div>
-      </div>
-
-      <div class="board-card card">
-        <h3>🎯 Tabuleiro adversário</h3>
-        <p class="board-subtitle">Descubra as posições!</p>
-        <div id="enemyBoard" class="board"></div>
-        <div class="legend">
-          <span>💥 Acerto</span>
-          <span>⭕ Erro</span>
-          <span>❓ Desconhecido</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- PERGUNTA -->
-    <div id="questionArea" class="card question-card hidden">
-      <div class="question-header">
-        <span id="questionLevel" class="level-badge">Nível</span>
-        <span>💻 Desafio de Segurança Digital</span>
-      </div>
-
-      <h3 id="questionText"></h3>
-
-      <div id="answerOptions" class="answer-options"></div>
-
-      <p id="answerFeedback" class="answer-feedback"></p>
-    </div>
-
-  </section>
-
-  <!-- FIM DO JOGO -->
-  <section id="endScreen" class="screen hidden">
-    <div class="card end-card">
-      <div class="end-icon">🏆</div>
-      <h2 id="winnerMessage">Fim de jogo!</h2>
-      <p id="finalMessage"></p>
-      <button class="btn primary" onclick="location.reload()">
-        🔄 Jogar novamente
-      </button>
-    </div>
-  </section>
-
-</main>
-
-<footer>
-  <p>Batalha contra o Cyberbullying • Respeito também se pratica online</p>
-</footer>
-
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 
 </body>
 </html>
